@@ -3,53 +3,52 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b1511">
+<meta name="theme-color" content="#04050f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Agora">
 <title>Agora</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1511'/%3E%3Cpath d='M5 24a11 11 0 0 1 22 0' fill='none' stroke='%23d4ac5b' stroke-width='3'/%3E%3Cpath d='M10 24a6 6 0 0 1 12 0' fill='none' stroke='%237db8ff' stroke-width='3'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Schibsted+Grotesk:wght@400;500;600;700&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
 /* Agora — the chamber.
    Desktop: floor (transcript) | chamber (the stage: room, network, seats, flow, pulse) | insight (answer, analyst, results, rankings).
    Phone: one pane at a time with a tab bar; the chamber is home. */
 :root {
-  --bg: #0b1511;
-  --stage: #070f0c;
-  --panel: #11201a;
-  --panel-2: #172b23;
-  --line: #22392d;
-  --fg: #ece6d6;
-  --muted: #a5b1a2;
-  --faint: #6c7d70;
-  --brass: #d4ac5b;
-  --brass-ink: #1a1408;
-  --good: #7ad3a0;
-  --bad: #ff8577;
-  --c1: #7db8ff; --c2: #ff8f6e; --c3: #c6a6ff; --c4: #5fd4c0; --c5: #ff9ccc; --c6: #b9e36b;
-  --seat-idle: #2c4a3a;
-  --serif: 'Newsreader', 'Iowan Old Style', Georgia, serif;
-  --sans: 'Schibsted Grotesk', -apple-system, 'Segoe UI', system-ui, sans-serif;
-  --r: 10px;
+  /* deep space, neon */
+  --bg: #04050f;
+  --stage: #03040c;
+  --panel: #0a0e22;
+  --panel-2: #121838;
+  --line: #1d2550;
+  --fg: #eef3ff;
+  --muted: #a3afd8;
+  --faint: #66719c;
+  --brass: #2ef2ff;
+  --brass-ink: #01121a;
+  --accent-2: #b46bff;
+  --accent-3: #ff4fb8;
+  --good: #3dffb5;
+  --bad: #ff4f8b;
+  --c1: #4da8ff; --c2: #ff5cad; --c3: #b77bff; --c4: #33ffc8; --c5: #ffb03d; --c6: #c8ff4d;
+  --seat-idle: #1c2448;
+  --glass: rgba(12, 16, 40, 0.62);
+  --glass-hi: rgba(46, 242, 255, 0.10);
+  --glow: 0 0 0 1px rgba(46, 242, 255, .18), 0 0 24px rgba(46, 242, 255, .12), 0 0 60px rgba(180, 107, 255, .08);
+  --serif: 'Unbounded', 'Space Grotesk', system-ui, sans-serif;
+  --sans: 'Space Grotesk', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --r: 12px;
   --tabbar: 56px;
   color-scheme: dark;
 }
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    --bg: #eaefe9; --stage: #f5f8f4; --panel: #f9fbf7; --panel-2: #e2e9e1; --line: #c9d5c8;
-    --fg: #13261d; --muted: #4f6356; --faint: #7f9184; --brass: #8a6413; --brass-ink: #fff8ea;
-    --good: #1d7a4a; --bad: #b8322a;
-    --c1: #2f6fd0; --c2: #cc5a33; --c3: #7a52c7; --c4: #138a78; --c5: #c23f7f; --c6: #5d8a12;
-    --seat-idle: #c4d1c3; color-scheme: light;
-  }
-}
 :root[data-theme="light"] {
-  --bg: #eaefe9; --stage: #f5f8f4; --panel: #f9fbf7; --panel-2: #e2e9e1; --line: #c9d5c8;
-  --fg: #13261d; --muted: #4f6356; --faint: #7f9184; --brass: #8a6413; --brass-ink: #fff8ea;
-  --good: #1d7a4a; --bad: #b8322a;
-  --c1: #2f6fd0; --c2: #cc5a33; --c3: #7a52c7; --c4: #138a78; --c5: #c23f7f; --c6: #5d8a12;
-  --seat-idle: #c4d1c3; color-scheme: light;
+  --bg: #eef1fb; --stage: #f6f8ff; --panel: #ffffff; --panel-2: #e7ebfa; --line: #cdd4ef;
+  --fg: #0d1230; --muted: #4a5384; --faint: #7d86b0; --brass: #0a8fb3; --brass-ink: #ffffff;
+  --good: #108a5c; --bad: #c42a5f; --glass: rgba(255,255,255,.75); --glass-hi: rgba(10,143,179,.08); --glow: 0 6px 30px rgba(20,30,90,.12);
+  --c1: #2063d6; --c2: #c9367d; --c3: #7442d1; --c4: #0f8a72; --c5: #c27100; --c6: #5c8a00;
+  --seat-idle: #cfd5ee; color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -511,6 +510,165 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
 .app[data-mode="compose"] .zoomctl { display: none; }
 @media (max-width: 600px) { .zoomctl { right: 6px; bottom: 6px; padding: 2px; gap: 2px; } .zoomctl button { width: 24px; height: 24px; font-size: 13px; } }
 
+
+/* =====================================================================
+   v6 SKIN: deep space, glass, neon, motion
+   ===================================================================== */
+@keyframes drift { 0% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(4%, -3%, 0) scale(1.12); } 100% { transform: translate3d(0,0,0) scale(1); } }
+@keyframes hue { from { filter: hue-rotate(0deg); } to { filter: hue-rotate(360deg); } }
+@keyframes shimmer { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes vin { from { opacity: 0; transform: scale(.965); filter: blur(8px) saturate(2); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(46,242,255,.5); } 100% { box-shadow: 0 0 0 14px rgba(46,242,255,0); } }
+@keyframes blink { 50% { opacity: .35; } }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@keyframes float-up { 0% { opacity: 0; transform: translate(0, 0) scale(.6); } 15% { opacity: 1; transform: translate(calc(var(--dx) * .2), -30px) scale(1.25); } 100% { opacity: 0; transform: translate(var(--dx), -260px) scale(.9); } }
+@keyframes slide-in { from { opacity: 0; transform: translateX(40px); filter: blur(4px); } to { transform: none; filter: none; } }
+@keyframes swipe-l { from { opacity: .2; transform: translateX(6%) rotateY(-12deg) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes swipe-r { from { opacity: .2; transform: translateX(-6%) rotateY(12deg) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes title-in { 0% { opacity: 0; letter-spacing: .5em; filter: blur(10px); } 100% { opacity: 1; letter-spacing: .02em; filter: none; } }
+@keyframes border-spin { to { --ang: 360deg; } }
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+
+body { background: radial-gradient(1200px 700px at 15% -10%, rgba(180,107,255,.16), transparent 60%), radial-gradient(1000px 600px at 110% 10%, rgba(46,242,255,.12), transparent 60%), var(--bg); font-family: var(--sans); letter-spacing: .005em; }
+.aurora { position: fixed; inset: -20%; z-index: 0; pointer-events: none; overflow: hidden; }
+.aurora i { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(90px); opacity: .22; animation: drift 26s ease-in-out infinite; }
+.aurora i:nth-child(1) { left: 5%; top: 10%; background: #6a3bff; }
+.aurora i:nth-child(2) { right: 0; top: 30%; background: #00d9ff; animation-duration: 34s; animation-delay: -8s; }
+.aurora i:nth-child(3) { left: 35%; bottom: -10%; background: #ff2fa0; opacity: .14; animation-duration: 40s; animation-delay: -16s; }
+.app { position: relative; z-index: 1; }
+:root[data-theme="light"] .aurora { opacity: .35; }
+
+/* type */
+.brand { font: 700 22px/1 var(--serif); letter-spacing: .04em; text-transform: uppercase; background: linear-gradient(90deg, #2ef2ff, #b46bff, #ff4fb8, #2ef2ff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 6s linear infinite; }
+.topic { font: 500 14px/1.3 var(--sans); }
+h3 { font: 600 12px var(--serif); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.phase-line { font: 600 13px var(--serif); letter-spacing: .04em; }
+.count, .scrub-label, .kring b, .tnum { font-family: var(--mono); }
+
+/* glass panes */
+.top { background: linear-gradient(180deg, rgba(10,14,34,.85), rgba(10,14,34,.55)); backdrop-filter: blur(14px) saturate(1.4); border-bottom: 1px solid rgba(46,242,255,.14); box-shadow: 0 1px 0 rgba(180,107,255,.12), 0 10px 40px rgba(0,0,0,.35); }
+.floor { background: rgba(6,8,22,.55); backdrop-filter: blur(10px); border-right: 1px solid rgba(46,242,255,.1); }
+.insight { background: rgba(8,11,28,.62); backdrop-filter: blur(12px); border-left: 1px solid rgba(180,107,255,.14); }
+.chamber { background: transparent; }
+
+/* buttons */
+.primary { background: linear-gradient(110deg, #2ef2ff, #8a7dff 55%, #ff4fb8); background-size: 180% 100%; color: #050717; font-weight: 700; letter-spacing: .02em; box-shadow: 0 0 18px rgba(46,242,255,.35), inset 0 1px 0 rgba(255,255,255,.4); transition: background-position .5s, transform .15s, box-shadow .3s; }
+.primary:hover { background-position: 100% 0; box-shadow: 0 0 30px rgba(180,107,255,.55), inset 0 1px 0 rgba(255,255,255,.4); transform: translateY(-1px); filter: none; }
+.ghost, .chip, .brain-chip, .seg { background: rgba(14,19,46,.5); border-color: rgba(120,150,255,.2); backdrop-filter: blur(6px); transition: border-color .2s, box-shadow .2s, color .2s, transform .15s; }
+.ghost:hover, .chip:hover, .brain-chip:hover { border-color: rgba(46,242,255,.6); box-shadow: 0 0 16px rgba(46,242,255,.25); color: var(--fg); }
+.brain-chip .led { box-shadow: 0 0 10px currentColor; animation: blink 2.4s ease-in-out infinite; }
+input, textarea, select { background: rgba(8,11,30,.7); border-color: rgba(120,150,255,.22); transition: border-color .2s, box-shadow .2s; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: #2ef2ff; box-shadow: 0 0 0 3px rgba(46,242,255,.18), 0 0 24px rgba(46,242,255,.15); }
+
+/* view tabs */
+.views { background: rgba(10,14,36,.6); border-color: rgba(46,242,255,.18); backdrop-filter: blur(10px); box-shadow: var(--glow); }
+.views button:not(.info) { font: 600 11.5px var(--serif); letter-spacing: .04em; text-transform: uppercase; transition: color .2s, background .25s, box-shadow .25s; }
+.views button:not(.info):hover { color: var(--fg); background: rgba(46,242,255,.08); }
+.views button.on { background: linear-gradient(110deg, #2ef2ff, #9a7bff); color: #050717; box-shadow: 0 0 18px rgba(46,242,255,.5); }
+.views sup { color: inherit; }
+
+/* the stage frame: animated neon border */
+.stage-frame { background: #03040c; border: 1px solid transparent; border-radius: 18px; box-shadow: 0 0 0 1px rgba(46,242,255,.16), 0 0 40px rgba(46,242,255,.10), 0 30px 80px rgba(0,0,0,.6); isolation: isolate; }
+.stage-frame::before { content: ''; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--ang), rgba(46,242,255,.9), rgba(180,107,255,.2), rgba(255,79,184,.9), rgba(46,242,255,.15), rgba(46,242,255,.9)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; animation: border-spin 8s linear infinite; pointer-events: none; z-index: 4; opacity: .7; }
+.app[data-mode="compose"] .stage-frame::before { display: none; }
+#viz.vin { animation: vin .55s cubic-bezier(.2,.8,.2,1); }
+
+.th-open { display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border-radius: 999px; border: 1px solid rgba(255,79,184,.5); background: linear-gradient(110deg, rgba(255,79,184,.18), rgba(46,242,255,.12)); color: var(--fg); font: 700 11px var(--serif); letter-spacing: .08em; text-transform: uppercase; box-shadow: 0 0 18px rgba(255,79,184,.25); animation: pulse-ring 2.6s infinite; }
+.th-open svg { width: 15px; height: 15px; }
+.th-open:hover { box-shadow: 0 0 30px rgba(255,79,184,.5); transform: translateY(-1px); }
+
+/* hud cards, cards, answer */
+.kring, .card, .cards > * { background: linear-gradient(160deg, rgba(18,24,58,.72), rgba(8,10,28,.72)) !important; border-color: rgba(120,150,255,.18) !important; backdrop-filter: blur(10px); transition: transform .25s, box-shadow .25s, border-color .25s; }
+.kring:hover { transform: translateY(-2px); border-color: rgba(46,242,255,.5) !important; box-shadow: 0 0 26px rgba(46,242,255,.18); }
+.kring .val { filter: drop-shadow(0 0 6px currentColor); }
+.chat > * { animation: rise .45s cubic-bezier(.2,.8,.2,1) both; }
+.caption { font-size: 12.5px; color: var(--faint); }
+.viz-tip { background: rgba(8,11,30,.92); border-color: rgba(46,242,255,.35); box-shadow: 0 0 30px rgba(46,242,255,.15), 0 20px 50px rgba(0,0,0,.5); backdrop-filter: blur(10px); }
+.zoomctl { background: rgba(8,11,30,.7); border-color: rgba(46,242,255,.25); box-shadow: 0 0 20px rgba(46,242,255,.12); }
+.tabbar { background: rgba(6,8,22,.85) !important; backdrop-filter: blur(14px); border-top: 1px solid rgba(46,242,255,.16) !important; }
+::-webkit-scrollbar { width: 8px; height: 8px; } ::-webkit-scrollbar-thumb { background: linear-gradient(#2ef2ff55, #b46bff55); border-radius: 8px; } ::-webkit-scrollbar-track { background: transparent; }
+::selection { background: rgba(46,242,255,.35); }
+
+/* =====================================================================
+   THEATER
+   ===================================================================== */
+body.theater-on { overflow: hidden; }
+.theater { position: fixed; inset: 0; z-index: 100; background: #02030a; display: flex; flex-direction: column; color: var(--fg); perspective: 1600px; animation: vin .5s ease both; }
+.th-space { position: absolute; inset: 0; pointer-events: none; background:
+  radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 72% 12%, #bfe8ff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 42% 82%, #ffd2f0 50%, transparent 51%), radial-gradient(1px 1px at 88% 66%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 28% 58%, #fff 50%, transparent 51%),
+  radial-gradient(900px 600px at 20% 10%, rgba(120,60,255,.22), transparent 60%), radial-gradient(900px 600px at 90% 90%, rgba(0,220,255,.16), transparent 60%), radial-gradient(700px 500px at 60% 40%, rgba(255,40,160,.10), transparent 60%); animation: drift 40s ease-in-out infinite; }
+.th-top { position: relative; z-index: 3; display: flex; align-items: center; gap: 14px; padding: 12px max(18px, env(safe-area-inset-right)) 10px max(18px, env(safe-area-inset-left)); padding-top: max(12px, env(safe-area-inset-top)); background: linear-gradient(180deg, rgba(4,5,15,.9), rgba(4,5,15,0)); }
+.th-brand { font: 700 15px var(--serif); letter-spacing: .18em; background: linear-gradient(90deg, #2ef2ff, #b46bff, #ff4fb8, #2ef2ff); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shimmer 5s linear infinite; white-space: nowrap; }
+.th-brand span { font: 500 11px var(--mono); letter-spacing: .05em; margin-left: 8px; -webkit-text-fill-color: var(--faint); }
+.th-topic { flex: 1; min-width: 0; font: 500 14px var(--sans); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.th-phase { display: inline-flex; align-items: center; gap: 6px; font: 700 11px var(--mono); letter-spacing: .1em; color: var(--muted); }
+.th-phase i { width: 9px; height: 9px; border-radius: 50%; background: var(--faint); }
+.th-phase i.live { background: #ff3b6b; box-shadow: 0 0 12px #ff3b6b; animation: blink 1.2s infinite; }
+.th-btn { background: rgba(14,19,46,.6); border: 1px solid rgba(120,150,255,.25); color: var(--muted); border-radius: 999px; padding: 6px 13px; font: 600 12px var(--sans); }
+.th-btn:hover { color: var(--fg); border-color: #2ef2ff; box-shadow: 0 0 16px rgba(46,242,255,.3); }
+.th-main { position: relative; z-index: 2; flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 0; }
+.theater.no-chat .th-main { grid-template-columns: minmax(0, 1fr) 0; }
+.theater.no-chat .th-chat { display: none; }
+.th-stage { position: relative; min-height: 0; padding: 4px 74px 92px; transform-style: preserve-3d; }
+.th-stage.swipe-l { animation: swipe-l .55s cubic-bezier(.2,.8,.2,1); } .th-stage.swipe-r { animation: swipe-r .55s cubic-bezier(.2,.8,.2,1); }
+.th-stage .stage-frame { position: absolute; inset: 4px 74px 92px; height: auto; border-radius: 22px; }
+.th-arrow { position: absolute; top: 50%; z-index: 5; width: 54px; height: 120px; margin-top: -60px; border-radius: 28px; border: 1px solid rgba(46,242,255,.35); background: linear-gradient(180deg, rgba(46,242,255,.12), rgba(180,107,255,.12)); color: #2ef2ff; display: grid; place-items: center; backdrop-filter: blur(8px); box-shadow: 0 0 24px rgba(46,242,255,.2); transition: transform .2s, box-shadow .2s, background .2s; }
+.th-arrow svg { width: 28px; height: 28px; filter: drop-shadow(0 0 8px #2ef2ff); }
+.th-arrow:hover { transform: scale(1.08); box-shadow: 0 0 40px rgba(46,242,255,.5); background: linear-gradient(180deg, rgba(46,242,255,.25), rgba(180,107,255,.25)); }
+.th-arrow.left { left: 10px; } .th-arrow.right { right: 370px; }
+.theater.no-chat .th-arrow.right { right: 10px; }
+.th-title { position: absolute; left: 80px; bottom: 10px; z-index: 4; max-width: min(640px, calc(100% - 520px)); }
+.th-title.in > * { animation: title-in .7s cubic-bezier(.2,.8,.2,1) both; }
+.th-title .th-idx { font: 700 11px var(--mono); color: #2ef2ff; letter-spacing: .15em; margin-right: 10px; }
+.th-title b { font: 700 20px var(--serif); letter-spacing: .02em; text-transform: uppercase; background: linear-gradient(90deg, #fff, #b9f6ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.th-title em { font: 700 10px var(--mono); font-style: normal; margin-left: 8px; padding: 2px 6px; border-radius: 5px; background: #ff4fb8; color: #12001a; vertical-align: 4px; }
+.th-title p { margin: 3px 0 0; font-size: 12px; color: var(--faint); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; animation-delay: .1s !important; }
+.th-dots { position: absolute; right: 380px; bottom: 26px; z-index: 4; display: flex; gap: 6px; }
+.theater.no-chat .th-dots { right: 20px; }
+.th-dots button { width: 8px; height: 8px; border-radius: 99px; border: 0; padding: 0; background: rgba(160,180,255,.3); transition: width .3s, background .3s; }
+.th-dots button.on { width: 26px; background: linear-gradient(90deg, #2ef2ff, #ff4fb8); box-shadow: 0 0 12px rgba(46,242,255,.6); }
+.th-chat { position: relative; min-height: 0; display: flex; flex-direction: column; border-left: 1px solid rgba(46,242,255,.14); background: linear-gradient(180deg, rgba(6,8,22,.55), rgba(6,8,22,.85)); backdrop-filter: blur(12px); }
+.th-chat-head { display: flex; align-items: center; gap: 8px; padding: 10px 14px; font: 700 11px var(--mono); letter-spacing: .14em; color: var(--muted); border-bottom: 1px solid rgba(120,150,255,.12); }
+.th-chat-head i { width: 8px; height: 8px; border-radius: 50%; background: #ff3b6b; box-shadow: 0 0 10px #ff3b6b; animation: blink 1.2s infinite; }
+.th-chat-head span { margin-left: auto; letter-spacing: .04em; color: var(--faint); font-weight: 500; }
+.th-chat-list { flex: 1; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 8px 10px 14px; gap: 2px; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 28%); mask-image: linear-gradient(180deg, transparent 0, #000 28%); }
+.tc-item { transition: opacity .8s, filter .8s; }
+.tc-item.enter { animation: slide-in .45s cubic-bezier(.2,.8,.2,1); }
+.tc-line { font-size: 13px; line-height: 1.45; padding: 4px 6px; border-radius: 8px; word-wrap: break-word; }
+.tc-item.enter:last-child .tc-line { background: linear-gradient(90deg, rgba(46,242,255,.10), transparent); }
+.tc-line.mod { background: rgba(46,242,255,.06); border-left: 2px solid #2ef2ff; }
+.tc-line.vote { opacity: .9; }
+.tc-line.rx { font-size: 12px; color: var(--muted); }
+.tc-badge { display: inline-grid; place-items: center; min-width: 18px; height: 16px; padding: 0 4px; margin-right: 6px; border-radius: 4px; background: var(--cc, #2ef2ff); color: #050717; font: 800 10px var(--mono); vertical-align: 1px; box-shadow: 0 0 8px var(--cc, #2ef2ff); }
+.tc-badge.mod { --cc: #2ef2ff; } .tc-badge.syn { --cc: #ff4fb8; }
+.tc-user { font-weight: 700; margin-right: 4px; }
+.tc-user::after { content: ':'; color: var(--faint); }
+.tc-text { color: #dbe3ff; }
+.tc-at { font-style: normal; color: #2ef2ff; font-weight: 600; }
+.tc-switch { font: 700 10px var(--mono); color: #ffd23d; margin-right: 5px; padding: 1px 4px; border: 1px solid rgba(255,210,61,.5); border-radius: 4px; }
+.tc-sys { display: flex; align-items: center; gap: 8px; margin: 8px 0; font: 700 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: #b46bff; }
+.tc-sys::before, .tc-sys::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(180,107,255,.6), transparent); }
+.th-emotes { position: absolute; left: 0; right: 0; bottom: 30px; height: 0; pointer-events: none; }
+.th-emotes span { position: absolute; bottom: 0; font-size: 26px; animation: float-up 2.6s cubic-bezier(.2,.7,.3,1) forwards; filter: drop-shadow(0 0 10px rgba(255,255,255,.4)); }
+.th-ticker { position: relative; z-index: 3; height: 34px; overflow: hidden; border-top: 1px solid rgba(46,242,255,.18); background: linear-gradient(90deg, rgba(46,242,255,.08), rgba(180,107,255,.08), rgba(255,79,184,.08)); padding-bottom: env(safe-area-inset-bottom); }
+.th-ticker-in { display: flex; width: max-content; animation: marquee 40s linear infinite; }
+.th-ticker-in span { display: inline-flex; align-items: center; gap: 0; white-space: nowrap; font: 600 12px/34px var(--mono); color: #cfe9ff; padding-right: 40px; }
+.th-ticker-in i { font-style: normal; color: #ff4fb8; margin: 0 16px; }
+@media (max-width: 900px) {
+  .th-main { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 34%; }
+  .th-chat { border-left: 0; border-top: 1px solid rgba(46,242,255,.14); }
+  .th-stage { padding: 0; } .th-stage .stage-frame { inset: 0 6px 6px; border-radius: 16px; }
+  .th-arrow { width: 38px; height: 76px; margin-top: -38px; border-radius: 20px; } .th-arrow.left { left: 10px; } .th-arrow.right { right: 10px; }
+  .th-arrow svg { width: 20px; height: 20px; }
+  .th-arrow { top: 33%; }
+  .th-title { left: 16px; bottom: auto; top: 10px; max-width: calc(100% - 32px); pointer-events: none; } .th-title p { display: none; } .th-title b { font-size: 14px; }
+  .th-dots { right: 50%; transform: translateX(50%); bottom: 12px; } .th-dots button { width: 6px; height: 6px; } .th-dots button.on { width: 18px; }
+  .th-brand span, .th-topic { display: none; }
+  .theater.no-chat .th-main { grid-template-rows: 1fr 0; }
+}
+@media (prefers-reduced-motion: reduce) { .aurora i, .th-space, .th-ticker-in, .stage-frame::before, .brand, .th-brand, .th-open { animation: none !important; } }
+
 /* single-file build: brain picker */
 .pick { display: flex; flex-direction: column; gap: 8px; }
 .pick-card { text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
@@ -529,6 +687,30 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
 </style>
 </head>
 <body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="theater hidden" id="theater" role="dialog" aria-label="Theater mode">
+  <div class="th-space" aria-hidden="true"></div>
+  <header class="th-top">
+    <div class="th-brand">AGORA<span>// chamber</span></div>
+    <div class="th-topic" id="th-topic"></div>
+    <div class="th-phase" id="th-phase"></div>
+    <button type="button" class="th-btn" id="th-chat-toggle" title="Show or hide chat">Chat</button>
+    <button type="button" class="th-btn" id="th-close" aria-label="Exit theater">✕</button>
+  </header>
+  <div class="th-main">
+    <div class="th-stage" id="th-stage"></div>
+    <button type="button" class="th-arrow left" id="th-prev" aria-label="Previous view"><svg viewBox="0 0 24 24"><path d="M15 4l-8 8 8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="th-arrow right" id="th-next" aria-label="Next view"><svg viewBox="0 0 24 24"><path d="M9 4l8 8-8 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="th-title" id="th-title"></div>
+    <div class="th-dots" id="th-dots"></div>
+    <aside class="th-chat" id="th-chat">
+      <div class="th-chat-head"><i></i>STREAM CHAT<span id="th-viewers"></span></div>
+      <div class="th-chat-list" id="th-chat-list"></div>
+      <div class="th-emotes" id="th-emotes" aria-hidden="true"></div>
+    </aside>
+  </div>
+  <div class="th-ticker"><div class="th-ticker-in" id="th-ticker-in"></div></div>
+</div>
 <div class="app" id="app" data-mode="compose">
   <header class="top">
     <button class="brand" id="home" type="button" aria-label="Agora home">Agora</button>
@@ -579,15 +761,21 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
           <button type="button" data-v="room" class="on">Room</button>
           <button type="button" data-v="network">Network</button>
           <button type="button" data-v="sphere">Sphere <sup>3D</sup></button>
+          <button type="button" data-v="helix">Helix <sup>3D</sup></button>
+          <button type="button" data-v="skyline">Skyline <sup>3D</sup></button>
           <button type="button" data-v="ridges">Ridges <sup>3D</sup></button>
           <button type="button" data-v="chord">Chord</button>
+          <button type="button" data-v="matrix">Matrix</button>
           <button type="button" data-v="mc">Monte Carlo</button>
+          <button type="button" data-v="radar">Radar</button>
+          <button type="button" data-v="spectrum">Spectrum</button>
           <button type="button" data-v="phase">Phase</button>
           <button type="button" data-v="flow">Flow</button>
           <button type="button" data-v="pulse">Pulse</button>
           <button type="button" data-v="seats">Seats</button>
           <button type="button" class="info" data-term="views" aria-label="What the views show">i</button>
         </div>
+        <button type="button" class="th-open" id="th-open" title="Theater mode (F)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Theater</span></button>
         <div class="phase">
           <div class="phase-line"><span id="phase-label">Waiting for a question</span><span class="count" id="phase-count"></span></div>
           <div class="pbar"><div id="pfill"></div></div>
@@ -788,7 +976,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     const [r, g, b] = rgb(stage);
     PAL = {
       stage, fg: cssVar('--fg'), muted: cssVar('--muted'), faint: cssVar('--faint'), line: cssVar('--line'),
-      brass: cssVar('--brass'), panel: cssVar('--panel'), bad: cssVar('--bad'),
+      brass: cssVar('--brass'), panel: cssVar('--panel'), bad: cssVar('--bad'), good: cssVar('--good') || '#3dffb5',
       camps: ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6'].map(cssVar),
       dark: 0.299 * r + 0.587 * g + 0.114 * b < 120,
     };
@@ -1018,15 +1206,15 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
         if (W < 520) continue;
         const ang = Math.atan2(c.y - (H / 2 + 6), c.x - W / 2);
         const lx = c.x + Math.cos(ang) * (c.R + 10); const ly = c.y + Math.sin(ang) * (c.R + 8);
-        ctx.font = '500 9.5px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillStyle = rgba(PAL.faint, 0.9);
+        ctx.font = '500 9.5px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = rgba(PAL.faint, 0.9);
         ctx.textAlign = Math.cos(ang) > 0.3 ? 'left' : Math.cos(ang) < -0.3 ? 'right' : 'center';
         ctx.fillText(c.label, lx, ly); ctx.textAlign = 'left';
         continue;
       }
       const label = c.label.length > 24 ? `${c.label.slice(0, 23)}…` : c.label;
-      ctx.font = '600 11px "Schibsted Grotesk", system-ui, sans-serif';
+      ctx.font = '600 11px "Space Grotesk", system-ui, sans-serif';
       const tw = ctx.measureText(label).width; const cnt = String(c.n);
-      ctx.font = '500 11px "Schibsted Grotesk", system-ui, sans-serif';
+      ctx.font = '500 11px "Space Grotesk", system-ui, sans-serif';
       const cw = ctx.measureText(cnt).width;
       const w = 20 + 6 + tw + 8 + cw + 8; const h = 20;
       let x = c.x - w / 2; let y = c.y - c.R - 22;
@@ -1036,10 +1224,10 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       ctx.fillStyle = rgba(PAL.panel, 0.88); ctx.strokeStyle = rgba(c.color, 0.85); ctx.lineWidth = 1;
       roundRect(x, y, w, h, 6); ctx.fill(); ctx.stroke();
       ctx.fillStyle = c.color; roundRect(x + 3, y + 3, 14, 14, 4); ctx.fill();
-      ctx.fillStyle = '#0e1a15'; ctx.font = '700 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#0e1a15'; ctx.font = '700 10px "Space Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(c.id, x + 10, y + h / 2 + 0.5); ctx.textAlign = 'left';
-      ctx.fillStyle = PAL.fg; ctx.font = '600 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(label, x + 23, y + h / 2 + 0.5);
-      ctx.fillStyle = PAL.muted; ctx.font = '500 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(cnt, x + 23 + tw + 8, y + h / 2 + 0.5);
+      ctx.fillStyle = PAL.fg; ctx.font = '600 11px "Space Grotesk", system-ui, sans-serif'; ctx.fillText(label, x + 23, y + h / 2 + 0.5);
+      ctx.fillStyle = PAL.muted; ctx.font = '500 11px "Space Grotesk", system-ui, sans-serif'; ctx.fillText(cnt, x + 23 + tw + 8, y + h / 2 + 0.5);
       ctx.restore();
     }
     ctx.textBaseline = 'alphabetic';
@@ -1123,19 +1311,19 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     }
     ctx.textBaseline = 'middle';
     f.stages.forEach((s, i) => {
-      ctx.fillStyle = PAL.muted; ctx.font = '600 11.5px "Schibsted Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = PAL.muted; ctx.font = '600 11.5px "Space Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText(s.label, f.xs[i], 22);
     });
     const D = st.D; const last = f.stages.length - 1;
     for (const b of f.blocks) {
       if (b.h < 12) continue;
-      ctx.font = '700 11px "Schibsted Grotesk", system-ui, sans-serif';
+      ctx.font = '700 11px "Space Grotesk", system-ui, sans-serif';
       if (b.i === 0) { ctx.textAlign = 'right'; ctx.fillStyle = campColor(b.camp); ctx.fillText(`${b.camp} ${b.n}`, f.xs[0] - 10, b.y + b.h / 2); }
       else if (b.i === last) {
         ctx.textAlign = 'left'; ctx.fillStyle = campColor(b.camp);
         ctx.fillText(`${b.camp} ${b.n}`, f.xs[last] + 10, b.y + b.h / 2 - (W < 480 || b.h < 30 ? 0 : 7));
-        if (W >= 480 && b.h >= 30) { const c = D.camps.find((x) => x.id === b.camp); ctx.font = '500 10.5px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; const t = c ? c.label : ''; ctx.fillText(t.length > 16 ? `${t.slice(0, 15)}…` : t, f.xs[last] + 10, b.y + b.h / 2 + 8); }
-      } else if (W >= 480) { ctx.textAlign = 'center'; ctx.font = '600 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.fg; ctx.fillText(String(b.n), f.xs[b.i] + 16, b.y + b.h / 2); }
+        if (W >= 480 && b.h >= 30) { const c = D.camps.find((x) => x.id === b.camp); ctx.font = '500 10.5px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; const t = c ? c.label : ''; ctx.fillText(t.length > 16 ? `${t.slice(0, 15)}…` : t, f.xs[last] + 10, b.y + b.h / 2 + 8); }
+      } else if (W >= 480) { ctx.textAlign = 'center'; ctx.font = '600 10px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.fg; ctx.fillText(String(b.n), f.xs[b.i] + 16, b.y + b.h / 2); }
     }
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
   }
@@ -1172,7 +1360,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     const { pts, marks, order } = pulse;
     const x0 = 40; const x1 = W - (W < 480 ? 46 : 70); const y0 = 34; const y1 = H - 64; const b0 = H - 48; const b1 = H - 16;
     const X = (i) => (pts.length === 1 ? (x0 + x1) / 2 : x0 + (i * (x1 - x0)) / (pts.length - 1)); const Y = (v) => y1 - v * (y1 - y0);
-    ctx.font = '500 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.textBaseline = 'middle';
+    ctx.font = '500 10px "Space Grotesk", system-ui, sans-serif'; ctx.textBaseline = 'middle';
     for (const v of [0, 0.25, 0.5, 0.75, 1]) {
       ctx.strokeStyle = rgba(PAL.line, 0.9); ctx.lineWidth = 1; ctx.setLineDash(v === 0 || v === 1 ? [] : [2, 4]);
       ctx.beginPath(); ctx.moveTo(x0, Y(v)); ctx.lineTo(x1, Y(v)); ctx.stroke();
@@ -1220,10 +1408,10 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     for (const c of order) {
       const y = Y(last.shares[c] || 0); let ly = y; while (used.some((u) => Math.abs(u - ly) < 13)) ly += 13; used.push(ly);
       ctx.fillStyle = campColor(c); ctx.beginPath(); ctx.arc(X(pts.length - 1), y, 3.5, 0, TAU); ctx.fill();
-      ctx.font = '700 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.textAlign = 'left';
+      ctx.font = '700 11px "Space Grotesk", system-ui, sans-serif'; ctx.textAlign = 'left';
       ctx.fillText(`${c} ${Math.round((last.shares[c] || 0) * 100)}%`, X(pts.length - 1) + 8, ly);
     }
-    ctx.fillStyle = PAL.brass; ctx.font = '500 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(`conf ${Math.round(last.conf * 100)}`, X(pts.length - 1) + 8, Y(last.conf) + (used.some((u) => Math.abs(u - Y(last.conf)) < 12) ? 13 : 0));
+    ctx.fillStyle = PAL.brass; ctx.font = '500 10px "Space Grotesk", system-ui, sans-serif'; ctx.fillText(`conf ${Math.round(last.conf * 100)}`, X(pts.length - 1) + 8, Y(last.conf) + (used.some((u) => Math.abs(u - Y(last.conf)) < 12) ? 13 : 0));
     if (mouse && mouse.x >= x0 && mouse.x <= x1 && mouse.y >= y0 - 10 && mouse.y <= b1) {
       const i = Math.max(0, Math.min(pts.length - 1, Math.round(((mouse.x - x0) / (x1 - x0)) * (pts.length - 1))));
       ctx.strokeStyle = rgba(PAL.fg, 0.5); ctx.beginPath(); ctx.moveTo(X(i), y0); ctx.lineTo(X(i), b1); ctx.stroke();
@@ -1233,7 +1421,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     ctx.textBaseline = 'alphabetic';
   }
   function empty(text) {
-    ctx.fillStyle = PAL.faint; ctx.font = '500 14px "Schibsted Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = PAL.faint; ctx.font = '500 14px "Space Grotesk", system-ui, sans-serif'; ctx.textAlign = 'center';
     ctx.fillText(text, W / 2, H / 2); ctx.textAlign = 'left';
   }
 
@@ -1331,15 +1519,15 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     if (PAL.dark && modTalking) { ctx.shadowColor = PAL.brass; ctx.shadowBlur = 18; }
     ctx.fillStyle = PAL.panel; ctx.strokeStyle = modTalking ? PAL.brass : rgba(PAL.brass, 0.5); ctx.lineWidth = 2;
     ctx.beginPath(); ctx.arc(cx, cy, ar * 1.55, 0, TAU); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
-    ctx.fillStyle = PAL.brass; ctx.font = `700 ${Math.round(ar * 0.95)}px "Newsreader", Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = PAL.brass; ctx.font = `700 ${Math.round(ar * 0.95)}px "Unbounded", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('M', cx, cy + 1);
-    ctx.font = '500 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; ctx.fillText('moderator', cx, cy + ar * 1.55 + 11);
+    ctx.font = '500 10px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; ctx.fillText('moderator', cx, cy + ar * 1.55 + 11);
     const st0 = getS();
     if (st0.typingVerb && st0.D?.status === 'running' && !modTalking) { // the moderator or research desk is working
       const by = cy - ar * 1.55 - 14;
       ctx.fillStyle = rgba(PAL.panel, 0.95); ctx.strokeStyle = rgba(PAL.brass, 0.8); ctx.lineWidth = 1; roundRect(cx - 17, by - 8, 34, 16, 8); ctx.fill(); ctx.stroke();
       for (let k = 0; k < 3; k++) { ctx.fillStyle = rgba(PAL.brass, 0.35 + 0.65 * Math.max(0, Math.sin(now * 0.008 - k * 0.9))); ctx.beginPath(); ctx.arc(cx - 8 + k * 8, by, 2, 0, TAU); ctx.fill(); }
-      ctx.font = '500 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; ctx.fillText(st0.typingVerb, cx, by - 18);
+      ctx.font = '500 11px "Space Grotesk", system-ui, sans-serif'; ctx.fillStyle = PAL.muted; ctx.fillText(st0.typingVerb, cx, by - 18);
     }
     // avatars
     const f = focusId(); const showAll = W >= 520 && seats.size <= 24;
@@ -1358,7 +1546,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       ctx.fillStyle = PAL.panel; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.fill();
       ctx.shadowBlur = 0;
       ctx.strokeStyle = col; ctx.lineWidth = isSpeaker ? 3 : 2; ctx.beginPath(); ctx.arc(p.x, p.y, r, 0, TAU); ctx.stroke();
-      ctx.fillStyle = col; ctx.font = `700 ${Math.max(7, Math.round(r * 0.72))}px "Schibsted Grotesk", system-ui, sans-serif`;
+      ctx.fillStyle = col; ctx.font = `700 ${Math.max(7, Math.round(r * 0.72))}px "Space Grotesk", system-ui, sans-serif`;
       ctx.fillText(a.username.split('_').map((x) => x[0]).join('').slice(0, 2).toUpperCase(), p.x, p.y + 0.5);
       ctx.fillStyle = PAL.fg; ctx.beginPath(); ctx.arc(p.x + Math.cos(p.g) * r * 0.78, p.y + Math.sin(p.g) * r * 0.78, Math.max(1.3, r * 0.14), 0, TAU); ctx.fill();
       ctx.globalAlpha = 1;
@@ -1370,7 +1558,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
         for (let k = 0; k < 3; k++) { ctx.fillStyle = rgba(PAL.fg, 0.35 + 0.65 * Math.max(0, Math.sin(now * 0.008 - k * 0.9))); ctx.beginPath(); ctx.arc(bx - 6 + k * 6, by - 0.5, 1.7, 0, TAU); ctx.fill(); }
       }
       if (isSpeaker || isTarget || isTyping || id === f || showAll) {
-        ctx.font = `${isSpeaker || isTarget ? 700 : 500} ${isSpeaker ? 11 : 9.5}px "Schibsted Grotesk", system-ui, sans-serif`;
+        ctx.font = `${isSpeaker || isTarget ? 700 : 500} ${isSpeaker ? 11 : 9.5}px "Space Grotesk", system-ui, sans-serif`;
         ctx.fillStyle = isSpeaker ? PAL.fg : isTarget ? PAL.brass : rgba(PAL.muted, showAll && !isTyping && id !== f ? 0.75 : 1);
         const below = p.y >= cy; ctx.fillText(`@${a.username}`, p.x, below ? p.y + r + 10 : p.y - r - (isTyping ? 21 : 9));
       }
@@ -1386,7 +1574,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       const p = seatPos(t.id); if (!p) continue; const age = pinned ? 0.5 : (now - t.t0) / 1700;
       ctx.globalAlpha = age < 0.15 ? age / 0.15 : 1 - Math.max(0, (age - 0.6) / 0.4);
       ctx.fillStyle = campColor(t.camp); roundRect(p.x - 9, p.y - ar - 22, 18, 16, 4); ctx.fill();
-      ctx.fillStyle = '#0e1a15'; ctx.font = '700 10px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(t.camp, p.x, p.y - ar - 13.5); ctx.globalAlpha = 1;
+      ctx.fillStyle = '#0e1a15'; ctx.font = '700 10px "Space Grotesk", system-ui, sans-serif'; ctx.fillText(t.camp, p.x, p.y - ar - 13.5); ctx.globalAlpha = 1;
     }
     // speech bubbles, newest on top
     const shown = speaking.slice(-2);
@@ -1397,11 +1585,11 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       const alpha = pinned ? 1 : Math.min(1, age / 250) * (1 - Math.max(0, (age - 5600) / 900)) * (newest ? 1 : 0.55);
       if (alpha <= 0) return;
       const maxW = Math.min(250, W * 0.42);
-      ctx.font = '500 11.5px "Schibsted Grotesk", system-ui, sans-serif';
+      ctx.font = '500 11.5px "Space Grotesk", system-ui, sans-serif';
       const lines = wrapText(t.text, maxW - 20, newest ? 4 : 2);
       const head = t.id === 'mod' ? 'Moderator' : `@${byId[t.id]?.username || ''}${t.to ? ` → @${byId[t.to]?.username || ''}` : ''}`;
-      ctx.font = '700 11px "Schibsted Grotesk", system-ui, sans-serif';
-      const bw = Math.min(maxW, Math.max(ctx.measureText(head).width, ...lines.map((l) => { ctx.font = '500 11.5px "Schibsted Grotesk", system-ui, sans-serif'; return ctx.measureText(l).width; })) + 20);
+      ctx.font = '700 11px "Space Grotesk", system-ui, sans-serif';
+      const bw = Math.min(maxW, Math.max(ctx.measureText(head).width, ...lines.map((l) => { ctx.font = '500 11.5px "Space Grotesk", system-ui, sans-serif'; return ctx.measureText(l).width; })) + 20);
       const bh = 24 + lines.length * 15;
       const toward = t.id === 'mod' ? { x: cx, y: cy - ar * 1.55 - bh - 10 } : { x: p.x + (cx - p.x) * 0.36, y: p.y + (cy - p.y) * 0.36 };
       let bx = toward.x - bw / 2; let by = t.id === 'mod' ? toward.y : toward.y - bh / 2;
@@ -1417,8 +1605,8 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
         ctx.strokeStyle = rgba(col, 0.9); ctx.beginPath(); ctx.moveTo(tx - 6, ty); ctx.lineTo(p.x + (tx - p.x) * 0.35, p.y + (ty - p.y) * 0.35); ctx.lineTo(tx + 6, ty); ctx.stroke();
       }
       ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
-      ctx.fillStyle = col; ctx.font = '700 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(head, bx + 10, by + 16);
-      ctx.fillStyle = PAL.fg; ctx.font = '500 11.5px "Schibsted Grotesk", system-ui, sans-serif';
+      ctx.fillStyle = col; ctx.font = '700 11px "Space Grotesk", system-ui, sans-serif'; ctx.fillText(head, bx + 10, by + 16);
+      ctx.fillStyle = PAL.fg; ctx.font = '500 11.5px "Space Grotesk", system-ui, sans-serif';
       lines.forEach((l, i) => ctx.fillText(l, bx + 10, by + 32 + i * 15));
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.globalAlpha = 1;
     });
@@ -1438,18 +1626,18 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   // =====================================================================
   // shared: cameras, glow sprites, math helpers, live talk beams
   // =====================================================================
-  const VIEW3D = new Set(['sphere', 'ridges']);
+  const VIEW3D = new Set(['sphere', 'ridges', 'helix', 'skyline']);
   const cams = {};
   function cam() { return cams[view] || (cams[view] = { x: 0, y: 0, k: 1 }); }
-  const orbits = { sphere: { yaw: 0.7, pitch: 0.38, dist: 3.3, user: -1e9 }, ridges: { yaw: -0.62, pitch: 0.46, dist: 3.5, user: -1e9 } };
+  const orbits = { sphere: { yaw: 0.7, pitch: 0.38, dist: 3.3, user: -1e9 }, ridges: { yaw: -0.62, pitch: 0.46, dist: 3.5, user: -1e9 }, helix: { yaw: 0.3, pitch: 0.18, dist: 3.6, user: -1e9 }, skyline: { yaw: -0.5, pitch: 0.55, dist: 3.4, user: -1e9 } };
   const ORBIT0 = JSON.parse(JSON.stringify(orbits));
   function orb() { return orbits[view] || orbits.sphere; }
   let P3 = null; let lastNow = 0;
   function stepOrbit(now) {
     const o = orb(); const dt = Math.min(60, now - (lastNow || now)); lastNow = now;
-    if (now - o.user > 3500 && !matchMedia('(prefers-reduced-motion: reduce)').matches) o.yaw += dt * (view === 'ridges' ? 0.00005 : 0.00011);
+    if (now - o.user > 3500 && !matchMedia('(prefers-reduced-motion: reduce)').matches) o.yaw += dt * (view === 'ridges' || view === 'skyline' ? 0.00005 : 0.00011);
   }
-  function setup3D() { const o = orb(); P3 = { cy: Math.cos(o.yaw), sy: Math.sin(o.yaw), cp: Math.cos(o.pitch), sp: Math.sin(o.pitch), d: o.dist, f: Math.min(W, H) * (view === 'sphere' ? 1.25 : 1.05) }; }
+  function setup3D() { const o = orb(); P3 = { cy: Math.cos(o.yaw), sy: Math.sin(o.yaw), cp: Math.cos(o.pitch), sp: Math.sin(o.pitch), d: o.dist, f: Math.min(W, H) * (view === 'sphere' ? 1.25 : view === 'skyline' ? 1.2 : 1.05) }; }
   // world: y is up. returns screen x, y, depth z, and scale s
   function proj(x, y, z) {
     const x1 = x * P3.cy + z * P3.sy; const z1 = -x * P3.sy + z * P3.cy;
@@ -1477,7 +1665,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     return { g: num / (n * tot), lorenz };
   }
   const mono = (px, w = 500) => `${w} ${px}px "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
-  const sans = (px, w = 500) => `${w} ${px}px "Schibsted Grotesk", system-ui, sans-serif`;
+  const sans = (px, w = 500) => `${w} ${px}px "Space Grotesk", system-ui, sans-serif`;
   const fmt = (x, d = 2) => (Number.isFinite(x) ? x.toFixed(d) : '–');
 
   function liveTalk(now) { return talk.filter((t) => t.kind !== 'vote' && (pinned || now - t.t0 < 6500)); }
@@ -1574,7 +1762,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   }
   let showMath = null; // null = automatic: on when there is room
   function drawMathHud() {
-    if (!(showMath ?? W >= 900) || !stats || W < 430 || view === 'mc' || view === 'phase' || view === 'pulse' || view === 'room' || view === 'chord') return;
+    if (!(showMath ?? W >= 900) || !stats || W < 430 || view === 'mc' || view === 'phase' || view === 'pulse' || view === 'room' || view === 'chord' || view === 'matrix' || view === 'radar' || view === 'spectrum') return;
     const s = stats;
     const rows = s.n ? [
       ['H', '= −Σ pᵢ log₂ pᵢ', `${fmt(s.H)} bits`],
@@ -1732,7 +1920,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     // the moderator is the core
     const core = proj(0, 0, 0); const modOn = liveTalk(now).some((t) => t.id === 'mod') || (S.typingVerb && S.D?.status === 'running');
     glowAt(core.x, core.y, (modOn ? 40 : 26) + 3 * Math.sin(now * 0.004), PAL.brass, modOn ? 0.9 : 0.5);
-    ctx.fillStyle = PAL.brass; ctx.font = `700 ${Math.round(11 + core.s * 0.02)}px "Newsreader", Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('M', core.x, core.y + 1);
+    ctx.fillStyle = PAL.brass; ctx.font = `700 ${Math.round(11 + core.s * 0.02)}px "Unbounded", system-ui, sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('M', core.x, core.y + 1);
     // agents, far to near
     const typing = S.typing || new Set(); const byId = S.byId || {};
     const sorted = [...pj.values()].sort((a, b) => b.z - a.z);
@@ -2150,6 +2338,346 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   }
   function networkPos(id) { return id === 'mod' ? { x: W / 2, y: H / 2 + 6 } : nodes.get(id); }
 
+  // =====================================================================
+  // DEEP SPACE backdrop: parallax star layers, drifting nebulae, a faint
+  // coordinate lattice. Shared by every canvas view.
+  // =====================================================================
+  let spaceStars = null;
+  function makeSpace() {
+    spaceStars = [];
+    for (let L = 0; L < 3; L++) {
+      const n = [170, 90, 34][L];
+      for (let i = 0; i < n; i++) spaceStars.push({ L, x: hash01(`s${L}_${i}`, 1), y: hash01(`s${L}_${i}`, 2), b: 0.25 + hash01(`s${L}_${i}`, 3) * 0.75, tw: hash01(`s${L}_${i}`, 4) * TAU, hue: hash01(`s${L}_${i}`, 5) });
+    }
+  }
+  function drawSpace(now) {
+    if (!PAL.dark) { drawGridLight(); return; }
+    if (!spaceStars) makeSpace();
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#04050f'); g.addColorStop(0.55, '#060818'); g.addColorStop(1, '#0a0420');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // nebulae drift slowly
+    const t = now * 0.00004; const neb = [[PAL.camps[2], 0.22, 0.3, 0.55], [PAL.camps[0], 0.78, 0.68, 0.5], [PAL.camps[1], 0.6, 0.15, 0.32], [PAL.camps[3], 0.15, 0.85, 0.3]];
+    ctx.globalCompositeOperation = 'lighter';
+    neb.forEach(([col, x, y, r], i) => {
+      const cx = W * (x + 0.06 * Math.sin(t * (1 + i * 0.3) + i)); const cy = H * (y + 0.05 * Math.cos(t * (1.2 + i * 0.2) + i * 2)); const R = Math.max(W, H) * r;
+      const gr = ctx.createRadialGradient(cx, cy, 0, cx, cy, R); gr.addColorStop(0, rgba(col, 0.13)); gr.addColorStop(0.45, rgba(col, 0.045)); gr.addColorStop(1, rgba(col, 0));
+      ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H);
+    });
+    // stars with parallax against the camera
+    const c = VIEW3D.has(view) ? { x: (orb().yaw * 60) % W, y: orb().pitch * 40, k: 1 } : cam();
+    for (const s of spaceStars) {
+      const par = [0.04, 0.12, 0.3][s.L];
+      let x = (s.x * W + c.x * par + now * 0.004 * (s.L + 1)) % W; if (x < 0) x += W;
+      let y = (s.y * H + c.y * par) % H; if (y < 0) y += H;
+      const a = s.b * (0.55 + 0.45 * Math.sin(now * 0.0016 * (s.L + 1) + s.tw));
+      const col = s.hue < 0.15 ? '#ffd2f0' : s.hue < 0.3 ? '#bfe8ff' : '#ffffff';
+      if (s.L === 2) glowAt(x, y, 5, col, a * 0.8);
+      ctx.fillStyle = rgba(col, a * (0.5 + s.L * 0.25)); ctx.fillRect(x, y, 1 + s.L * 0.5, 1 + s.L * 0.5);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    // lattice
+    ctx.strokeStyle = 'rgba(120,160,255,0.035)'; ctx.lineWidth = 1;
+    ctx.beginPath(); for (let x = 0; x < W; x += 48) { ctx.moveTo(x + 0.5, 0); ctx.lineTo(x + 0.5, H); } for (let y = 0; y < H; y += 48) { ctx.moveTo(0, y + 0.5); ctx.lineTo(W, y + 0.5); } ctx.stroke();
+    // scanline sweep
+    const sy = ((now * 0.05) % (H + 200)) - 100; const sg = ctx.createLinearGradient(0, sy - 60, 0, sy + 2);
+    sg.addColorStop(0, 'rgba(46,242,255,0)'); sg.addColorStop(1, 'rgba(46,242,255,0.035)'); ctx.fillStyle = sg; ctx.fillRect(0, sy - 60, W, 62);
+  }
+
+  // =====================================================================
+  // HELIX (3D): every message on a spiral through time. Height = order,
+  // radius = confidence, colour = camp, size = reactions; chords = replies.
+  // =====================================================================
+  let helixPts = []; let helixPick = [];
+  function drawHelix(now) {
+    if (!st || !st.msgs.length) return empty('The helix grows as messages arrive.');
+    stepOrbit(now); setup3D();
+    const msgs = st.msgs.filter((m) => m.role === 'agent' || m.role === 'vote' || m.role === 'moderator' || m.role === 'system');
+    const N = msgs.length; const dark = PAL.dark; const reveal = Math.min(1, (now - revealT) / 1600);
+    const shown = Math.max(1, Math.round(N * (1 - (1 - reveal) ** 3)));
+    const Y = (i) => -1.15 + (2.3 * i) / Math.max(1, N - 1); const TH = (i) => i * 0.42 + now * 0.00008;
+    const pos = new Map(); helixPts = [];
+    msgs.forEach((m, i) => {
+      if (i >= shown) return;
+      const conf = m.confidence ?? 55; const r = m.role === 'agent' || m.role === 'vote' ? 0.35 + 0.55 * (conf / 100) : 0.2;
+      const strand = m.role === 'vote' ? Math.PI : 0;
+      const w = [Math.cos(TH(i) + strand) * r, Y(i), Math.sin(TH(i) + strand) * r];
+      const q = proj(...w); pos.set(m.id, { w, q, m }); helixPts.push({ w, q, m, i });
+    });
+    // axis and round rings
+    const a0 = proj(0, -1.3, 0); const a1 = proj(0, 1.3, 0); ctx.strokeStyle = rgba(PAL.brass, 0.35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(a0.x, a0.y); ctx.lineTo(a1.x, a1.y); ctx.stroke();
+    let lastLabY = null;
+    helixPts.forEach(({ m, i }) => {
+      if (m.role !== 'system' || !/^(Round|Final vote|Opening|Stress)/.test(m.text || '')) return;
+      const pts = []; for (let k = 0; k <= 48; k++) { const th = (k / 48) * TAU; pts.push(proj(Math.cos(th) * 1.0, Y(i), Math.sin(th) * 1.0)); }
+      ctx.strokeStyle = rgba(PAL.brass, 0.4); ctx.setLineDash([3, 4]); ctx.beginPath(); pts.forEach((p, k) => (k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.stroke(); ctx.setLineDash([]);
+      const lab = proj(1.08, Y(i), 0); if (lastLabY == null || Math.abs(lab.y - lastLabY) > 14) { lastLabY = lab.y; ctx.fillStyle = PAL.brass; ctx.font = mono(10, 700); ctx.textAlign = 'left'; ctx.fillText(String(m.text || '').split(/[.:]/)[0].slice(0, 18), lab.x + 4, lab.y); }
+    });
+    // the backbone spiral
+    ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+    for (let i = 1; i < helixPts.length; i++) {
+      const a = helixPts[i - 1]; const b = helixPts[i]; if (a.m.role === 'vote' || b.m.role === 'vote') continue;
+      const t = i / Math.max(1, N - 1); ctx.strokeStyle = rgba(hsl2hex(190 + 140 * t, 90, 62), 0.35); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(a.q.x, a.q.y); ctx.lineTo(b.q.x, b.q.y); ctx.stroke();
+    }
+    // reply chords
+    for (const p of helixPts) {
+      const m = p.m; if (!m.replyToId) continue; const t = pos.get(m.replyToId); if (!t) continue;
+      const col = m.stance ? campColor(m.stance) : PAL.brass; const mid = [(p.w[0] + t.w[0]) * 0.15, (p.w[1] + t.w[1]) / 2, (p.w[2] + t.w[2]) * 0.15];
+      ctx.strokeStyle = rgba(col, 0.32); ctx.lineWidth = 0.8; ctx.beginPath();
+      for (let k = 0; k <= 12; k++) { const s = k / 12; const u = 1 - s; const q = proj(u * u * p.w[0] + 2 * u * s * mid[0] + s * s * t.w[0], u * u * p.w[1] + 2 * u * s * mid[1] + s * s * t.w[1], u * u * p.w[2] + 2 * u * s * mid[2] + s * s * t.w[2]); k ? ctx.lineTo(q.x, q.y) : ctx.moveTo(q.x, q.y); }
+      ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    // nodes, far to near
+    helixPick = [];
+    const sorted = helixPts.slice().sort((a, b) => b.q.z - a.q.z);
+    const lastId = msgs[Math.min(shown, N) - 1]?.id;
+    for (const p of sorted) {
+      const m = p.m; if (m.role === 'system') continue;
+      const col = m.role === 'moderator' ? PAL.brass : m.stance ? campColor(m.stance) : PAL.faint;
+      const rx = (m.reactions || []).length; const r = Math.max(1.6, p.q.s * 0.008 * (1 + Math.min(2.5, rx * 0.45))) * (m.role === 'vote' ? 0.75 : 1);
+      if (dark) glowAt(p.q.x, p.q.y, r * 4.5, col, 0.7);
+      ctx.fillStyle = col; ctx.beginPath(); ctx.arc(p.q.x, p.q.y, r, 0, TAU); ctx.fill();
+      if (m.switchedFrom) { ctx.strokeStyle = PAL.fg; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(p.q.x, p.q.y, r + 2.5, 0, TAU); ctx.stroke(); }
+      if (m.id === lastId) { ctx.strokeStyle = rgba(PAL.fg, 0.5 + 0.5 * Math.sin(now * 0.008)); ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(p.q.x, p.q.y, r + 6, 0, TAU); ctx.stroke(); }
+      helixPick.push({ x: p.q.x, y: p.q.y, r: r + 4, m });
+    }
+    if (W >= 520) { ctx.font = mono(10); ctx.fillStyle = PAL.faint; ctx.textAlign = 'left'; ctx.fillText('y = time · ‖r‖ = confidence · size = reactions · ring = camp switch · inner strand: votes', 12, H - 12); }
+    ctx.textAlign = 'left';
+  }
+  function helixTip(m) {
+    const byId = getS().byId || {}; const a = byId[m.agentId];
+    const who = m.role === 'moderator' ? 'Moderator' : a ? `@${a.username}` : m.role;
+    return `<b>${who} <span class="tmuted">#${m.id}</span></b>${m.stance ? `<div><span class="tdot" style="background:${campColor(m.stance)}"></span>Camp ${m.stance}${m.confidence != null ? ` · ${m.confidence}%` : ''}${m.switchedFrom ? ` · switched from ${m.switchedFrom}` : ''}</div>` : ''}<div class="tmuted">${String(m.text || (m.role === 'vote' ? 'vote' : '')).replace(/[<>]/g, '').slice(0, 180)}</div>${(m.reactions || []).length ? `<div>${m.reactions.map((r) => EMO[r.r] || '').join('')}</div>` : ''}`;
+  }
+
+  // =====================================================================
+  // SKYLINE (3D): a city of 100 towers. x = discipline, z = temperament,
+  // height = credibility, colour = camp, beacon = speaking now.
+  // =====================================================================
+  let skyPick = [];
+  function drawSkyline(now) {
+    const S = getS(); const agents = S.agents || []; if (!agents.length) return empty('Convene the chamber to raise the skyline.');
+    stepOrbit(now); setup3D();
+    const discs = [...new Set(agents.map((a) => a.discipline))]; const temps = [...new Set(agents.map((a) => a.temperament))];
+    const nx = discs.length; const nz = temps.length; const D = st?.D; const active = D ? new Set(D.agentIds) : null;
+    const X = (i) => -1.35 + (2.7 * (i + 0.5)) / nx; const Z = (j) => -0.55 + (1.1 * (j + 0.5)) / nz; const bw = (2.7 / nx) * 0.36; const bd = (1.1 / nz) * 0.34;
+    const maxSc = Math.max(1, ...agents.map((a) => st?.scores[a.id]?.score || 0));
+    const reveal = Math.min(1, (now - revealT) / 1400); const ease = 1 - (1 - reveal) ** 3;
+    // ground plane
+    const g = [proj(-1.45, -0.6, -0.65), proj(1.45, -0.6, -0.65), proj(1.45, -0.6, 0.65), proj(-1.45, -0.6, 0.65)];
+    ctx.fillStyle = rgba(PAL.camps[0], 0.05); ctx.beginPath(); g.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = rgba(PAL.camps[0], 0.16); ctx.lineWidth = 0.6;
+    for (let i = 0; i <= nx; i++) { const x = -1.35 + (2.7 * i) / nx; const a = proj(x, -0.6, -0.6); const b = proj(x, -0.6, 0.6); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    for (let j = 0; j <= nz; j++) { const z = -0.55 + (1.1 * j) / nz; const a = proj(-1.4, -0.6, z); const b = proj(1.4, -0.6, z); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    const speakers = new Set(liveTalk(now).map((t) => t.id));
+    const towers = agents.map((a) => {
+      const i = discs.indexOf(a.discipline); const j = temps.indexOf(a.temperament); const sc = st?.scores[a.id]; const on = !active || active.has(a.id);
+      const h = on ? (0.06 + 1.25 * Math.max(0, sc?.score || 0) / maxSc + 0.04 * (sc?.msgs || 0)) * ease : 0.015;
+      const camp = st?.mapped ? st.stance[a.id]?.camp : null;
+      return { a, i, j, h: Math.min(1.7, h), col: camp ? campColor(camp) : agentColor(a), on, x: X(i), z: Z(j), d: proj(X(i), 0, Z(j)).z, conf: st?.stance[a.id]?.confidence };
+    }).sort((p, q) => q.d - p.d);
+    skyPick = [];
+    const face = (pts, fill, stroke) => { ctx.beginPath(); pts.forEach((p, k) => (k ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 0.7; ctx.stroke(); } };
+    for (const t of towers) {
+      const y0 = -0.6; const y1 = y0 + t.h; const x0 = t.x - bw; const x1 = t.x + bw; const z0 = t.z - bd; const z1 = t.z + bd;
+      const P = (x, y, z) => proj(x, y, z);
+      const c = { a: P(x0, y0, z0), b: P(x1, y0, z0), c: P(x1, y0, z1), d: P(x0, y0, z1), A: P(x0, y1, z0), B: P(x1, y1, z0), C: P(x1, y1, z1), D: P(x0, y1, z1) };
+      const al = t.on ? 1 : 0.25;
+      // pick the two side faces that face the camera
+      const sides = [[c.a, c.b, c.B, c.A, P(t.x, y0, z0 - 1)], [c.b, c.c, c.C, c.B, P(x1 + 1, y0, t.z)], [c.c, c.d, c.D, c.C, P(t.x, y0, z1 + 1)], [c.d, c.a, c.A, c.D, P(x0 - 1, y0, t.z)]];
+      sides.sort((p, q) => q[4].z - p[4].z);
+      for (const sd of sides.slice(2)) face(sd.slice(0, 4), rgba(t.col, 0.3 * al), rgba(t.col, 0.55 * al));
+      face([c.A, c.B, c.C, c.D], rgba(t.col, 0.85 * al), rgba('#ffffff', 0.35 * al));
+      // window strips
+      if (t.on && t.h > 0.2) { ctx.strokeStyle = rgba('#ffffff', 0.12); ctx.lineWidth = 0.6; for (let y = y0 + 0.08; y < y1 - 0.04; y += 0.08) { const p1 = P(x0, y, z1); const p2 = P(x1, y, z1); ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } }
+      const top = P(t.x, y1, t.z);
+      if (PAL.dark && t.on) glowAt(top.x, top.y, 10 + t.h * 18, t.col, 0.55);
+      if (speakers.has(t.a.id)) { const bt = P(t.x, y1 + 0.5, t.z); ctx.strokeStyle = rgba(t.col, 0.8); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(bt.x, bt.y); ctx.stroke(); glowAt(bt.x, bt.y, 26 + 6 * Math.sin(now * 0.01), t.col, 0.9); }
+      skyPick.push({ x: top.x, y: top.y, r: 9, id: t.a.id });
+    }
+    // axis labels
+    ctx.font = mono(9); ctx.fillStyle = PAL.faint;
+    discs.forEach((d, i) => { if (nx > 12 && W < 700 && i % 2) return; const p = proj(X(i), -0.6, 0.7); ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(0.6); ctx.textAlign = 'left'; ctx.fillText(d.split(' ').pop().slice(0, 12), 0, 0); ctx.restore(); });
+    temps.forEach((t, j) => { const p = proj(1.5, -0.6, Z(j)); ctx.textAlign = 'left'; ctx.fillStyle = PAL.muted; ctx.fillText(t, p.x + 4, p.y); });
+    if (W >= 520) { ctx.textAlign = 'left'; ctx.font = mono(10); ctx.fillStyle = PAL.faint; ctx.fillText('x = field · z = temperament · height = credibility + activity · colour = camp · beacon = speaking', 12, H - 12); }
+    ctx.textAlign = 'left';
+  }
+
+  // =====================================================================
+  // MATRIX: the full agent × agent interaction matrix, sorted by camp.
+  // =====================================================================
+  let mtx = null;
+  function computeMatrix() {
+    if (!st) return null;
+    const ids = st.D.agentIds.slice().sort((a, b) => (st.campOrder.indexOf(st.stance[a]?.camp) + 99 * !st.stance[a]?.camp) - (st.campOrder.indexOf(st.stance[b]?.camp) + 99 * !st.stance[b]?.camp) || (st.scores[b]?.score || 0) - (st.scores[a]?.score || 0));
+    const ix = new Map(ids.map((id, i) => [id, i])); const n = ids.length;
+    const cell = new Map(); const out = new Array(n).fill(0); const inn = new Array(n).fill(0);
+    for (const e of st.edges) {
+      const i = ix.get(e.from); const j = ix.get(e.to); if (i == null || j == null) continue;
+      const k = i * n + j; const c = cell.get(k) || { r: 0, p: 0, q: 0 };
+      if (e.type === 'reply') c.r += e.n; else { c.p += e.pos; c.q += e.neg; }
+      cell.set(k, c); out[i] += e.n; inn[j] += e.n;
+    }
+    return { ids, n, cell, out, inn };
+  }
+  let mtxHover = null;
+  function drawMatrix(now) {
+    if (!mtx || !mtx.n) return empty('The matrix fills as agents reply and react.');
+    const { ids, n, cell, out, inn } = mtx; const side = Math.min(W - 150, H - 110); const s = side / n; const x0 = Math.max(70, (W - side - 80) / 2); const y0 = 44;
+    ctx.fillStyle = rgba(PAL.panel, 0.55); ctx.fillRect(x0, y0, side, side);
+    // camp blocks
+    let start = 0;
+    for (let i = 1; i <= n; i++) {
+      const ca = st.stance[ids[i - 1]]?.camp; const cb = i < n ? st.stance[ids[i]]?.camp : null;
+      if (i === n || ca !== cb) {
+        const col = ca ? campColor(ca) : PAL.faint;
+        ctx.fillStyle = rgba(col, 0.07); ctx.fillRect(x0 + start * s, y0 + start * s, (i - start) * s, (i - start) * s);
+        ctx.strokeStyle = rgba(col, 0.6); ctx.lineWidth = 1; ctx.strokeRect(x0 + start * s, y0 + start * s, (i - start) * s, (i - start) * s);
+        ctx.fillStyle = col; ctx.fillRect(x0 - 8, y0 + start * s, 5, (i - start) * s); ctx.fillRect(x0 + start * s, y0 - 8, (i - start) * s, 5);
+        if ((i - start) * s > 12) { ctx.font = mono(10, 700); ctx.textAlign = 'right'; ctx.fillText(ca || '·', x0 - 12, y0 + ((start + i) / 2) * s + 3); }
+        start = i;
+      }
+    }
+    // cells
+    const mx = Math.max(1, ...[...cell.values()].map((c) => c.r + c.p + c.q));
+    ctx.globalCompositeOperation = PAL.dark ? 'lighter' : 'source-over';
+    for (const [k, c] of cell) {
+      const i = Math.floor(k / n); const j = k % n; const tot = c.r + c.p + c.q;
+      const col = c.q > c.p + c.r ? PAL.bad : c.r >= c.p ? (st.stance[ids[i]]?.camp ? campColor(st.stance[ids[i]].camp) : PAL.brass) : PAL.good;
+      const a = 0.35 + 0.65 * (tot / mx); ctx.fillStyle = rgba(col, a); ctx.fillRect(x0 + j * s + 0.5, y0 + i * s + 0.5, Math.max(1, s - 1), Math.max(1, s - 1));
+      if (s >= 5 && tot / mx > 0.6) glowAt(x0 + (j + 0.5) * s, y0 + (i + 0.5) * s, s * 2.5, col, 0.4);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    // marginals: out-degree (right), in-degree (bottom)
+    const mo = Math.max(1, ...out); const mi = Math.max(1, ...inn);
+    for (let i = 0; i < n; i++) {
+      const col = st.stance[ids[i]]?.camp ? campColor(st.stance[ids[i]].camp) : PAL.faint;
+      ctx.fillStyle = rgba(col, 0.75); ctx.fillRect(x0 + side + 6, y0 + i * s, (out[i] / mo) * 56, Math.max(1, s - 0.5));
+      ctx.fillRect(x0 + i * s, y0 + side + 6, Math.max(1, s - 0.5), (inn[i] / mi) * 40);
+    }
+    ctx.font = mono(9.5); ctx.fillStyle = PAL.faint; ctx.textAlign = 'left';
+    ctx.fillText('out-degree →', x0 + side + 6, y0 - 6); ctx.fillText('in-degree ↓', x0, y0 + side + 58);
+    ctx.fillText('row i → column j · colour: reply by camp · green praise · red criticism', x0 + 90, y0 + side + 58);
+    // density and reciprocity
+    let recip = 0; let links = 0; for (const k of cell.keys()) { links++; const i = Math.floor(k / n); const j = k % n; if (cell.has(j * n + i)) recip++; }
+    const dens = links / Math.max(1, n * (n - 1));
+    ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.fg; ctx.fillText(`ρ density ${(dens * 100).toFixed(2)}%   r reciprocity ${(recip / Math.max(1, links) * 100).toFixed(1)}%   |E| ${links}`, x0, 26);
+    // hover crosshair
+    mtxHover = null;
+    if (mouse && mouse.x >= x0 && mouse.x < x0 + side && mouse.y >= y0 && mouse.y < y0 + side) {
+      const j = Math.floor((mouse.x - x0) / s); const i = Math.floor((mouse.y - y0) / s);
+      ctx.strokeStyle = rgba(PAL.fg, 0.35); ctx.lineWidth = 1; ctx.strokeRect(x0, y0 + i * s, side, s); ctx.strokeRect(x0 + j * s, y0, s, side);
+      mtxHover = { i, j, c: cell.get(i * n + j) };
+    }
+    // sweep
+    const sw = ((now * 0.12) % (side + 40)) - 20; ctx.fillStyle = rgba(PAL.brass, 0.07); ctx.fillRect(x0 + sw, y0, 2, side);
+    ctx.textAlign = 'left';
+  }
+  function matrixTip(h) {
+    const byId = getS().byId || {}; const a = byId[mtx.ids[h.i]]; const b = byId[mtx.ids[h.j]]; const c = h.c;
+    return `<b>@${a?.username || '?'} → @${b?.username || '?'}</b>${c ? `<div>${c.r} replies · ${c.p} praise · ${c.q} criticism</div>` : '<div class="tmuted">no interaction</div>'}`;
+  }
+
+  // =====================================================================
+  // RADAR: each camp's make-up across the 20 fields and 5 temperaments.
+  // =====================================================================
+  function drawRadar(now) {
+    if (!st?.mapped) return empty('Radar charts appear once the camps are mapped.');
+    const S = getS(); const agents = (S.agents || []).filter((a) => st.D.agentIds.includes(a.id));
+    const discs = [...new Set(agents.map((a) => a.discipline))]; const temps = [...new Set(agents.map((a) => a.temperament))];
+    const order = st.campOrder.filter((c) => st.counts[c]); const side = W >= 720;
+    const rot = now * 0.00003; const reveal = Math.min(1, (now - revealT) / 1200); const ease = 1 - (1 - reveal) ** 3;
+    const radar = (cx, cy, R, axes, valueOf, title) => {
+      const k = axes.length; const ang = (i) => -Math.PI / 2 + (i / k) * TAU + rot;
+      for (let ring = 1; ring <= 4; ring++) {
+        ctx.strokeStyle = rgba(PAL.camps[0], ring === 4 ? 0.3 : 0.12); ctx.lineWidth = 1; ctx.beginPath();
+        for (let i = 0; i <= k; i++) { const a = ang(i % k); const x = cx + Math.cos(a) * R * ring / 4; const y = cy + Math.sin(a) * R * ring / 4; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.stroke();
+      }
+      ctx.font = mono(k > 8 ? 8.5 : 10); ctx.fillStyle = PAL.muted;
+      axes.forEach((ax, i) => {
+        const a = ang(i); ctx.strokeStyle = rgba(PAL.camps[0], 0.12); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); ctx.stroke();
+        ctx.textAlign = Math.cos(a) > 0.2 ? 'left' : Math.cos(a) < -0.2 ? 'right' : 'center';
+        ctx.fillText(ax.split(' ').pop().slice(0, 11), cx + Math.cos(a) * (R + 8), cy + Math.sin(a) * (R + 8) + 3);
+      });
+      ctx.globalCompositeOperation = PAL.dark ? 'lighter' : 'source-over';
+      order.forEach((c) => {
+        const col = campColor(c); const vals = axes.map((ax) => valueOf(c, ax)); const mx = Math.max(1e-9, ...order.flatMap((cc) => axes.map((ax) => valueOf(cc, ax))));
+        ctx.beginPath(); vals.forEach((v, i) => { const a = ang(i); const r = (v / mx) * R * ease; const x = cx + Math.cos(a) * r; const y = cy + Math.sin(a) * r; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath();
+        ctx.fillStyle = rgba(col, 0.13); ctx.fill(); ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
+        vals.forEach((v, i) => { if (!v) return; const a = ang(i); const r = (v / mx) * R * ease; glowAt(cx + Math.cos(a) * r, cy + Math.sin(a) * r, 6, col, 0.9); });
+      });
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.textAlign = 'center'; ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.fg; ctx.fillText(title, cx, cy - R - 26);
+    };
+    const share = (c, key, val) => { const mem = agents.filter((a) => a[key] === val); return mem.length ? mem.filter((a) => st.stance[a.id]?.camp === c).length / mem.length : 0; };
+    const R1 = side ? Math.min(W * 0.27, H * 0.36) : Math.min(W * 0.36, H * 0.22);
+    radar(side ? W * 0.34 : W / 2, side ? H / 2 + 14 : H * 0.3, R1, discs, (c, d) => share(c, 'discipline', d), 'share of each field in each camp');
+    const R2 = side ? Math.min(W * 0.15, H * 0.24) : Math.min(W * 0.3, H * 0.17);
+    radar(side ? W * 0.8 : W / 2, side ? H * 0.38 : H * 0.74, R2, temps, (c, t) => share(c, 'temperament', t), 'by temperament');
+    // legend with mean confidence per camp
+    let ly = side ? H * 0.38 + R2 + 40 : H - 14 - order.length * 15; const lx = side ? W * 0.68 : 14;
+    order.forEach((c) => {
+      const mem = st.D.agentIds.filter((id) => st.stance[id]?.camp === c); const mu = mem.reduce((a, id) => a + (st.stance[id].confidence || 0), 0) / Math.max(1, mem.length);
+      ctx.fillStyle = campColor(c); ctx.fillRect(lx, ly - 8, 10, 10); ctx.font = mono(10.5, 700); ctx.textAlign = 'left'; ctx.fillText(`${c}  n=${mem.length}  c̄=${mu.toFixed(0)}`, lx + 16, ly + 1); ly += 15;
+    });
+    ctx.textAlign = 'left';
+  }
+
+  // =====================================================================
+  // SPECTRUM: a spectrogram of the debate. x = time, rows = fields,
+  // brightness = activity, hue = dominant camp; waveform = reactions.
+  // =====================================================================
+  function drawSpectrum(now) {
+    if (!st || !st.msgs.length) return empty('The spectrum lights up as agents talk.');
+    const S = getS(); const byId = S.byId || {}; const agents = (S.agents || []).filter((a) => st.D.agentIds.includes(a.id));
+    const discs = [...new Set(agents.map((a) => a.discipline))]; const msgs = st.msgs.filter((m) => m.role === 'agent' || m.role === 'vote');
+    if (!msgs.length) return empty('The spectrum lights up as agents talk.');
+    const B = Math.max(12, Math.min(60, Math.floor((W - 160) / 9), Math.ceil(st.msgs.filter((m) => m.role === 'agent' || m.role === 'vote').length / 2.4))); const x0 = 130; const x1 = W - 20; const y0 = 96; const y1 = H - 52; const bw = (x1 - x0) / B; const rh = (y1 - y0) / discs.length;
+    const grid = discs.map(() => Array.from({ length: B }, () => ({ n: 0, camps: {} })));
+    const rx = new Array(B).fill(0); const sw = new Array(B).fill(0); const conf = new Array(B).fill(0); const cn = new Array(B).fill(0);
+    msgs.forEach((m, i) => {
+      const b = Math.min(B - 1, Math.floor((i / msgs.length) * B)); const a = byId[m.agentId]; const d = discs.indexOf(a?.discipline); if (d < 0) return;
+      const c = grid[d][b]; c.n += 1 + 0.5 * (m.reactions || []).length; if (m.stance) c.camps[m.stance] = (c.camps[m.stance] || 0) + 1;
+      rx[b] += (m.reactions || []).length; if (m.switchedFrom) sw[b]++; if (m.confidence != null) { conf[b] += m.confidence; cn[b]++; }
+    });
+    const mx = Math.max(1, ...grid.flat().map((c) => c.n));
+    const reveal = Math.min(1, (now - revealT) / 1200); const shownB = Math.ceil(B * (1 - (1 - reveal) ** 2));
+    ctx.globalCompositeOperation = PAL.dark ? 'lighter' : 'source-over';
+    grid.forEach((row, d) => row.forEach((c, b) => {
+      if (!c.n || b >= shownB) return; const dom = Object.entries(c.camps).sort((p, q) => q[1] - p[1])[0]?.[0];
+      const col = dom ? campColor(dom) : PAL.brass; const v = c.n / mx;
+      ctx.fillStyle = rgba(col, 0.2 + 0.8 * v); ctx.fillRect(x0 + b * bw + 0.5, y0 + d * rh + 0.5, bw - 1, rh - 1);
+      if (v > 0.66) glowAt(x0 + (b + 0.5) * bw, y0 + (d + 0.5) * rh, rh * 1.4, col, 0.5);
+    }));
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.font = mono(9); ctx.fillStyle = PAL.muted; ctx.textAlign = 'right';
+    discs.forEach((d, i) => { if (rh < 9 && i % 2) return; ctx.fillText(d.length > 20 ? `${d.slice(0, 19)}…` : d, x0 - 6, y0 + (i + 0.5) * rh + 3); });
+    // reactions waveform (mirrored) above
+    const mr = Math.max(1, ...rx); const wy = 58; ctx.beginPath();
+    for (let b = 0; b < shownB; b++) { const h = (rx[b] / mr) * 26 * (0.85 + 0.15 * Math.sin(now * 0.006 + b)); ctx.rect(x0 + b * bw + bw * 0.25, wy - h, bw * 0.5, h * 2); }
+    const wg = ctx.createLinearGradient(x0, 0, x1, 0); wg.addColorStop(0, PAL.camps[0]); wg.addColorStop(0.5, PAL.camps[2]); wg.addColorStop(1, PAL.camps[1]); ctx.fillStyle = wg; ctx.fill();
+    ctx.textAlign = 'left'; ctx.fillStyle = PAL.faint; ctx.fillText('reactions', 14, wy + 3);
+    // confidence trace + switch ticks below
+    ctx.strokeStyle = PAL.brass; ctx.lineWidth = 1.5; ctx.beginPath(); let started = false;
+    for (let b = 0; b < shownB; b++) { if (!cn[b]) continue; const x = x0 + (b + 0.5) * bw; const y = y1 + 34 - (conf[b] / cn[b] / 100) * 28; started ? ctx.lineTo(x, y) : (ctx.moveTo(x, y), started = true); }
+    ctx.stroke(); ctx.fillStyle = PAL.faint; ctx.fillText('confidence', 14, y1 + 22);
+    for (let b = 0; b < shownB; b++) if (sw[b]) { ctx.fillStyle = PAL.bad; ctx.fillRect(x0 + b * bw + bw * 0.3, y1 + 4, bw * 0.4, Math.min(12, sw[b] * 4)); }
+    // playhead
+    const px = x0 + shownB * bw; ctx.strokeStyle = rgba(PAL.fg, 0.6); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, y0 - 50); ctx.lineTo(px, y1 + 36); ctx.stroke(); glowAt(px, y0 - 50, 10, PAL.fg, 0.8);
+    ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.fg; ctx.fillText(`${msgs.length} messages · ${B} time bins · peak ${mx}/bin`, x0, 22);
+    ctx.textAlign = 'left';
+  }
+  function drawGridLight() {
+    if (!gridCv || gridCv.width !== Math.round(W * DPR) || gridCv.height !== Math.round(H * DPR)) {
+      gridCv = document.createElement('canvas'); gridCv.width = Math.round(W * DPR); gridCv.height = Math.round(H * DPR);
+      const g = gridCv.getContext('2d'); g.scale(DPR, DPR); g.fillStyle = rgba(PAL.faint, 0.3);
+      for (let x = 13; x < W; x += 26) for (let y = 13; y < H; y += 26) { g.beginPath(); g.arc(x, y, 0.8, 0, TAU); g.fill(); }
+    }
+    ctx.drawImage(gridCv, 0, 0, W, H);
+  }
+
   // ---------- frame ----------
   function drawGrid() {
     if (!gridCv || gridCv.width !== Math.round(W * DPR) || gridCv.height !== Math.round(H * DPR)) {
@@ -2166,7 +2694,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     layoutRoom();
     flow = st ? computeFlow() : null;
     pulse = st ? computePulse() : null;
-    layoutSphere(); stats = computeStats(); chord = computeChord(); phase = computePhase(); mcPrepare();
+    layoutSphere(); stats = computeStats(); chord = computeChord(); phase = computePhase(); mcPrepare(); mtx = computeMatrix();
     dirty = false;
   }
   function pick(mx, my) {
@@ -2180,6 +2708,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       for (const [id, p] of seats) { if (p.x == null) continue; const d = (p.x - mx) ** 2 + (p.y - my) ** 2; if (d < bd) { bd = d; best = { id, x: p.x, y: p.y }; } }
       return best;
     }
+    if (view === 'skyline') { let best = null; let bd = 1e9; for (const q of skyPick) { const d = (q.x - mx) ** 2 + (q.y - my) ** 2; if (d < 144 && d < bd) { bd = d; best = { id: q.id, x: q.x, y: q.y }; } } return best; }
     if (view === 'sphere') {
       let best = null; let bd = 1e9;
       for (const q of pj.values()) { const lim = Math.max(10, (q.r || 3) + 5); const d = (q.x - mx) ** 2 + (q.y - my) ** 2; if (d < lim * lim && d < bd) { bd = d; best = { id: q.id, x: q.x, y: q.y }; } }
@@ -2229,7 +2758,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     if (dirty) rebuild();
     easeCam();
     ctx.clearRect(0, 0, W, H);
-    drawGrid();
+    drawSpace(now);
     const is3 = VIEW3D.has(view); const c = cam();
     mouse = mouseS && !is3 ? { x: (mouseS.x - c.x) / c.k, y: (mouseS.y - c.y) / c.k } : mouseS;
     hover = null; let tipHtml = null;
@@ -2243,6 +2772,11 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     else if (view === 'phase') drawPhase(now);
     else if (view === 'sphere') { drawSphere(now); hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; }
     else if (view === 'ridges') drawRidges(now);
+    else if (view === 'helix') { drawHelix(now); if (mouse && !drag) { const h = helixPick.filter((p) => (p.x - mouse.x) ** 2 + (p.y - mouse.y) ** 2 < p.r * p.r).pop(); if (h) { tipHtml = helixTip(h.m); hover = null; } } }
+    else if (view === 'skyline') { drawSkyline(now); hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; }
+    else if (view === 'matrix') { drawMatrix(now); if (mtxHover) tipHtml = matrixTip(mtxHover); }
+    else if (view === 'radar') drawRadar(now);
+    else if (view === 'spectrum') drawSpectrum(now);
     if (!is3) ctx.restore();
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
     drawMathHud();
@@ -2316,13 +2850,15 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { PAL = null; dirty = true; });
     requestAnimationFrame(frame);
   };
-  V.setView = (v) => { view = v; if (zc) zc.classList.toggle('hidden', v === 'seats'); revealT = performance.now(); mouse = null; hover = null; hideTip(); dirty = true; };
+  V.setView = (v) => { if (cv && v !== view) { cv.classList.remove('vin'); void cv.offsetWidth; cv.classList.add('vin'); } view = v; if (zc) zc.classList.toggle('hidden', v === 'seats'); revealT = performance.now(); mouse = null; hover = null; hideTip(); dirty = true; };
   V.view = () => view;
   V.invalidate = () => { dirty = true; };
   V.resetNodes = () => { nodes.clear(); seats.clear(); n3.clear(); MC.key = ''; pulses = []; sparks = []; ambient = []; talk = []; rxLinks = []; queue = []; pinned = false; dirty = true; };
   V.pulse = (from, to, camp) => { if (!PAL) readPalette(); pulses.push({ from, to, t0: performance.now(), dur: 1000, col: camp ? campColor(camp) : PAL.brass }); };
   V.spark = (id, ch) => sparks.push({ id, ch, t0: performance.now() });
   V.derive = derive;
+  V.stats = () => stats;
+  V.VIEWS = ['room', 'network', 'sphere', 'helix', 'skyline', 'ridges', 'chord', 'matrix', 'mc', 'radar', 'spectrum', 'phase', 'flow', 'pulse', 'seats'];
   // messages arrive in batches; the room releases them one speaker at a time so it reads like a conversation
   let queue = []; let lastRelease = 0;
   V.speak = (m) => { const D = getS().D; if (!D) return; const t = talkFromMessage(m, D); if (!t) return; if (pinned) { pinned = false; talk = []; } queue.push(t); if (queue.length > 40) queue = queue.slice(-40); };
@@ -2968,6 +3504,7 @@ function onUpdate({ type, data }) {
       appendMsg(data, true);
       if (data.role === 'synthesis' || data.role === 'moderator') { hideTyping(); S.typingVerb = ''; }
       if (S.cutoff == null) Viz.speak(data);
+      if (window.Theater) Theater.onMessage(data);
       if (data.role === 'agent' && data.replyToId && S.cutoff == null) { const t = D.messages[data.replyToId - 1]; if (t?.agentId) Viz.pulse(data.agentId, t.agentId, data.stance); }
       Viz.invalidate(); soon(renderHUD, 'hud'); soon(renderScrub, 'scrub');
       if (data.role === 'agent' && data.replyToId) { const t = D.messages[data.replyToId - 1]; if (t?.agentId) drawArc(data.agentId, t.agentId, data.stance); }
@@ -2988,7 +3525,7 @@ function onUpdate({ type, data }) {
       const m = D.messages.find((x) => x.id === data.msgId); if (!m) break;
       (m.reactions = m.reactions || []).push(data.reaction);
       replaceMsg(m); popSeat(m.agentId); floatReaction(m.agentId, data.reaction.r);
-      if (S.cutoff == null) { Viz.react(data.reaction.from, m.agentId, data.reaction.r); Viz.spark(m.agentId, RX[data.reaction.r]); }
+      if (S.cutoff == null) { Viz.react(data.reaction.from, m.agentId, data.reaction.r); Viz.spark(m.agentId, RX[data.reaction.r]); if (window.Theater) Theater.onReaction(m, data.reaction); }
       Viz.invalidate();
       soon(renderMiniRank, 'rank');
       break;
@@ -3421,7 +3958,7 @@ function renderAll() { paintSeats(); renderPhase(); renderControls(); renderCamp
 
 
 // ---------- the stage: views ----------
-const VIEW_CAPTION = {
+var VIEW_CAPTION = window.VIEW_CAPTION = {
   room: 'Every agent at the table. The speaker lights up with what they said and a beam to who they are answering; everyone else turns to watch. Reactions pop from the listeners.',
   network: 'Each dot is an agent, clustered by camp and sized by credibility. Lines are replies and reactions; lines between camps bundle where the camps collide. Dashed red lines are criticism.',
   seats: '',
@@ -3431,8 +3968,14 @@ const VIEW_CAPTION = {
   ridges: 'Each camp\'s share of the chamber over time, as a 3D surface. Dashed: average confidence. Round markers on the floor. Drag to rotate.',
   chord: 'Who argues with whom. Ribbons join camps by how much they replied to and reacted at each other; ticks around the rim are agents, longer for more credibility. The matrix gives the exact counts.',
   mc: 'The bootstrap, live: 10,000 times, the chamber is resampled with replacement and the weighted vote recounted. Curves are the distribution of each camp\'s share; bars are how often each camp wins, with the error shrinking as samples pile up.',
+  helix: 'Every message on a spiral through time, bottom to top. Distance from the axis is confidence, size is reactions, colour is camp; chords are replies, rings mark rounds, the inner strand is the vote, a halo means the agent switched camps. Hover a point to read it.',
+  skyline: 'A city of the 100 agents: field along one side, temperament along the other. Tower height is credibility plus activity, colour is camp; a beacon fires from whoever is speaking.',
+  matrix: 'Every agent against every agent, sorted by camp. Row replies or reacts to column; coloured blocks on the diagonal are camps talking to themselves, off-diagonal cells are cross-camp fights. Bars show who talks most and who gets answered most.',
+  radar: 'What each camp is made of: the share of every field (left) and every temperament (right) that sits in each camp.',
+  spectrum: 'A spectrogram of the debate: time left to right, one row per field, brightness is how much that field spoke, colour is the camp it argued for. Top: reactions as a waveform. Bottom: confidence and camp switches.',
   phase: 'The debate as a path: across is how split the chamber is (normalized entropy), up is how sure it is. Gold curves are equal certainty. Right: entropy over time, how fast opinion moved each step, and how unequal credibility is (Lorenz curve, Gini).',
 };
+window.S = S;
 function setView(v, quiet) {
   S.view = v; if (!quiet) S.viewUser = v;
   $$('#views button[data-v]').forEach((b) => b.classList.toggle('on', b.dataset.v === v));
@@ -3441,6 +3984,7 @@ function setView(v, quiet) {
   $('#seat-modes').classList.toggle('hidden', !seats);
   $('#view-caption').textContent = seats ? $('#seat-hint').textContent : VIEW_CAPTION[v] || '';
   Viz.setView(v);
+  if (window.Theater) Theater.onView(v);
 }
 
 // ---------- the stage: HUD ----------
@@ -3599,7 +4143,7 @@ const GLOSSARY = [
   ['robustness', 'Robustness', '0 to 100, from P(win) (40%), how often the winner survives leaving a group out (30%) and how much support survives the red team (30%). 75+ is robust, 50–74 holds with caveats, under 50 is fragile.'],
   ['synthesizer', 'Synthesizer', 'Writes the final answer from the arguments, votes, credibility, stress test and recaps. It is told to weigh argument quality over headcount.'],
   ['analyst', 'Analyst', 'A chat that has read the whole debate. Ask who made the best point, what split the room, or where the reasoning breaks.'],
-  ['views', 'Chamber views', 'Room: the agents at the table, talking and listening. Network: who argued with whom, clustered by camp. Sphere (3D): opinion space, camps as poles, distance from the centre as confidence. Ridges (3D): camp shares over time as a surface. Chord: how much each camp engaged each other camp. Monte Carlo: the 10,000-sample bootstrap behind the win probabilities, animated. Phase: the debate as a path through disagreement and confidence, plus the credibility Gini. Seats: a parliament seating chart. Flow: each agent\'s path between camps. Pulse: camp shares over time. Every view zooms (scroll or pinch) and pans (drag); 3D views spin. Σ shows the live formulas. Replay rewinds any of them.'],
+  ['views', 'Chamber views', 'Room: the agents at the table, talking and listening. Network: who argued with whom, clustered by camp. Sphere (3D): opinion space, camps as poles, distance from the centre as confidence. Ridges (3D): camp shares over time as a surface. Chord: how much each camp engaged each other camp. Monte Carlo: the 10,000-sample bootstrap behind the win probabilities, animated. Helix (3D): every message on a spiral through time. Skyline (3D): the agents as a city, tower height = credibility. Matrix: every agent against every agent. Radar: what each camp is made of. Spectrum: a spectrogram of who spoke when. Theater (or press F): full screen with arrows between views and a live chat. Phase: the debate as a path through disagreement and confidence, plus the credibility Gini. Seats: a parliament seating chart. Flow: each agent\'s path between camps. Pulse: camp shares over time. Every view zooms (scroll or pinch) and pans (drag); 3D views spin. Σ shows the live formulas. Replay rewinds any of them.'],
   ['entropy', 'Entropy (H)', 'How split the chamber is, in bits: H = −Σ p log₂ p over camp shares. 0 means everyone agrees; log₂(number of camps) means an even split. Consensus κ = 1 − H / log₂k.'],
   ['gini', 'Gini (credibility)', 'How unequal credibility is across agents: 0 means everyone earned the same, 1 means one agent earned it all. Drawn as a Lorenz curve in the Phase view.'],
   ['neff', 'Effective camps (N_eff)', '1 / Σ p², the number of equally sized camps that would split the chamber this much. Two camps at 50/50 gives 2; 90/10 gives about 1.2.'],
@@ -3757,6 +4301,153 @@ async function init() {
   }
 }
 if (window.AGORA_READY) window.AGORA_READY.then(init); else init();
+
+</script>
+<script>
+/* Agora theater: the chamber full screen over deep space.
+   Arrows (or ← →) jump between views; the right column is a live, stream-style chat
+   where new lines slide in and older ones fade; a ticker streams the live statistics. */
+(function () {
+  'use strict';
+  const $t = (s) => document.querySelector(s);
+  const NAMES = { room: 'Room', network: 'Network', sphere: 'Sphere', helix: 'Helix', skyline: 'Skyline', ridges: 'Ridges', chord: 'Chord', matrix: 'Matrix', mc: 'Monte Carlo', radar: 'Radar', spectrum: 'Spectrum', phase: 'Phase', flow: 'Flow', pulse: 'Pulse', seats: 'Seats' };
+  const TAGS = { sphere: '3D', helix: '3D', skyline: '3D', ridges: '3D', mc: 'LIVE', spectrum: 'FFT' };
+  const EMO = { agree: '👍', decisive: '🔥', doubt: '🤔', wrong: '👎' };
+  let on = false; let home = null; let tick = null; let lastSeen = 0;
+  const views = () => (window.Viz?.VIEWS || Object.keys(NAMES));
+  const cssv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  function campCol(id) {
+    const D = window.S?.D; const i = (D?.camps || []).findIndex((c) => c.id === id);
+    return cssv(`--c${((i >= 0 ? i : 0) % 6) + 1}`);
+  }
+  function hueOf(agentId) { const a = window.S?.byId?.[agentId]; return a ? `hsl(${a.hue} 85% 68%)` : cssv('--fg'); }
+  const escT = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ---------- chat ----------
+  function lineFor(m) {
+    const S = window.S; const a = S?.byId?.[m.agentId];
+    if (m.role === 'system') return `<div class="tc-sys"><span>${escT(String(m.text || '').slice(0, 60))}</span></div>`;
+    if (m.role === 'moderator') return `<div class="tc-line mod"><b class="tc-badge mod">MOD</b><b class="tc-user" style="color:var(--brass)">moderator</b><span class="tc-text">${escT(String(m.text || '').replace(/\*\*/g, '').replace(/\n+/g, ' ').slice(0, 220))}</span></div>`;
+    if (m.role === 'synthesis') return `<div class="tc-line mod"><b class="tc-badge syn">VERDICT</b><span class="tc-text">${escT(String(m.text || '').replace(/[#*]/g, '').replace(/\n+/g, ' ').slice(0, 200))}</span></div>`;
+    if (!a) return '';
+    const camp = m.stance ? `<b class="tc-badge" style="--cc:${campCol(m.stance)}">${escT(m.stance)}</b>` : '';
+    if (m.role === 'vote') return `<div class="tc-line vote">${camp}<b class="tc-user" style="color:${hueOf(m.agentId)}">${escT(a.username)}</b><span class="tc-text">voted <b style="color:${campCol(m.stance)}">${escT(m.stance)}</b> · ${m.confidence ?? ''}%</span></div>`;
+    const to = m.replyToId ? S.D.messages[m.replyToId - 1] : null; const toU = to?.agentId ? S.byId[to.agentId]?.username : null;
+    const sw = m.switchedFrom ? `<b class="tc-switch">${escT(m.switchedFrom)}→${escT(m.stance)}</b>` : '';
+    const text = String(m.text || '').replace(/^@[a-z0-9_]+[,:]?\s*/i, '');
+    return `<div class="tc-line">${camp}<b class="tc-user" style="color:${hueOf(m.agentId)}">${escT(a.username)}</b>${sw}<span class="tc-text">${toU ? `<i class="tc-at">@${escT(toU)}</i> ` : ''}${escT(text.slice(0, 260))}</span></div>`;
+  }
+  function push(html, cls = '') {
+    if (!html) return; const list = $t('#th-chat-list'); if (!list) return;
+    const el = document.createElement('div'); el.className = `tc-item ${cls}`; el.innerHTML = html; list.appendChild(el);
+    while (list.children.length > 60) list.firstElementChild.remove();
+    fade(); list.scrollTop = list.scrollHeight;
+  }
+  function fade() {
+    const items = [...($t('#th-chat-list')?.children || [])].reverse();
+    items.forEach((el, i) => { el.style.opacity = String(Math.max(0.06, 1 - i * 0.075)); el.style.filter = i > 6 ? `blur(${Math.min(1.6, (i - 6) * 0.12)}px)` : ''; });
+  }
+  let lastEmote = 0;
+  function emote(ch) {
+    if (performance.now() - lastEmote < 350) return; lastEmote = performance.now();
+    const box = $t('#th-emotes'); if (!box) return;
+    const e = document.createElement('span'); e.textContent = ch; e.style.left = `${10 + Math.random() * 70}%`; e.style.setProperty('--dx', `${(Math.random() - 0.5) * 80}px`);
+    box.appendChild(e); setTimeout(() => e.remove(), 2600);
+  }
+  function prefill() {
+    const list = $t('#th-chat-list'); if (!list) return; list.innerHTML = '';
+    const D = window.S?.D; if (!D) { push('<div class="tc-sys"><span>Convene the chamber to start the stream</span></div>'); return; }
+    D.messages.slice(-30).forEach((m) => push(lineFor(m)));
+    lastSeen = D.messages.length;
+  }
+
+  // ---------- views ----------
+  function title(v) {
+    const t = $t('#th-title'); if (!t) return;
+    t.innerHTML = `<span class="th-idx">${String(views().indexOf(v) + 1).padStart(2, '0')} / ${String(views().length).padStart(2, '0')}</span><b>${NAMES[v] || v}</b>${TAGS[v] ? `<em>${TAGS[v]}</em>` : ''}<p>${escT((window.VIEW_CAPTION || {})[v] || '')}</p>`;
+    t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
+    $t('#th-dots').innerHTML = views().map((x) => `<button type="button" class="${x === v ? 'on' : ''}" data-v="${x}" aria-label="${NAMES[x]}"></button>`).join('');
+  }
+  function go(d) {
+    const vs = views(); const cur = window.S?.view || 'room'; const i = (vs.indexOf(cur) + d + vs.length) % vs.length;
+    window.setView(vs[i]); title(vs[i]);
+    const st = $t('#th-stage'); st.classList.remove('swipe-l', 'swipe-r'); void st.offsetWidth; st.classList.add(d > 0 ? 'swipe-l' : 'swipe-r');
+  }
+
+  // ---------- ticker ----------
+  function ticker() {
+    const s = window.Viz?.stats?.(); const D = window.S?.D; const el = $t('#th-ticker-in'); if (!el) return;
+    const bits = [];
+    if (D) bits.push(`◉ ${escT(D.phaseLabel || D.phase || '')}`, `${D.agentIds.length} agents`, `${D.messages.length} messages`);
+    if (s?.n) {
+      bits.push(`H = ${s.H.toFixed(3)} bits`, `κ = ${(1 - s.Hn).toFixed(3)}`, `N_eff = ${s.neff.toFixed(2)}`, `c̄ = ${s.mu.toFixed(1)} ± ${s.sd.toFixed(1)}`, `Gini = ${s.gini.toFixed(3)}`, `Δswitch = ${s.switches}`, `reactions = ${s.rx}`);
+      const counts = {}; Object.values(D.stance || {}).forEach((x) => { if (x?.camp) counts[x.camp] = (counts[x.camp] || 0) + 1; });
+      const n = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+      Object.entries(counts).sort((a, b) => b[1] - a[1]).forEach(([c, k]) => bits.push(`<b style="color:${campCol(c)}">${escT(c)} ${(k / n * 100).toFixed(1)}%</b>`));
+    }
+    if (!bits.length) bits.push('AGORA // standing by', 'pick a question and convene the chamber');
+    const html = bits.join('<i>✦</i>');
+    if (el.dataset.h !== html) { el.dataset.h = html; el.innerHTML = `<span>${html}</span><span aria-hidden="true">${html}</span>`; }
+    const top = $t('#th-topic'); if (top) top.textContent = D?.topic || 'Agora';
+    const ph = $t('#th-phase'); if (ph) ph.innerHTML = D ? `<i class="${D.status === 'running' ? 'live' : ''}"></i>${D.status === 'running' ? 'LIVE' : escT(D.status || '').toUpperCase()}` : '';
+    const vw = $t('#th-viewers'); if (vw) vw.textContent = D ? `${D.agentIds.length} agents in chat` : '';
+    // catch up if messages arrived while we were not told (e.g. after loading a past debate)
+    if (D && D.messages.length < lastSeen) prefill();
+  }
+
+  // ---------- open / close ----------
+  function open() {
+    if (on) return; on = true;
+    const frame = $t('#stage-frame'); home = document.createComment('stage-home'); frame.parentNode.insertBefore(home, frame);
+    $t('#th-stage').appendChild(frame); $t('#theater').classList.remove('hidden'); document.body.classList.add('theater-on');
+    if ((window.S?.view || 'room') === 'seats') window.setView('room');
+    title(window.S?.view || 'room'); prefill(); ticker(); tick = setInterval(ticker, 1000);
+    const th = $t('#theater'); if (th.requestFullscreen && !document.fullscreenElement) th.requestFullscreen({ navigationUI: 'hide' }).catch(() => {});
+  }
+  function close() {
+    if (!on) return; on = false;
+    const frame = $t('#stage-frame'); if (home) { home.parentNode.insertBefore(frame, home); home.remove(); home = null; }
+    $t('#theater').classList.add('hidden'); document.body.classList.remove('theater-on'); clearInterval(tick);
+    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+    title(window.S?.view || 'room');
+  }
+
+  // ---------- hooks from app.js ----------
+  window.Theater = {
+    open, close, isOn: () => on,
+    onMessage(m) { if (!on) return; lastSeen = window.S?.D?.messages.length || 0; push(lineFor(m), m.role === 'agent' ? 'enter' : 'enter sys'); if (m.switchedFrom) emote('🔀'); },
+    onReaction(m, r) {
+      if (!on) return; const S = window.S; const from = S.byId?.[r.from]?.username; const to = S.byId?.[m.agentId]?.username;
+      if (r.r === 'decisive' || r.r === 'wrong') push(`<div class="tc-line rx"><span class="tc-text">${EMO[r.r]} <b style="color:${hueOf(r.from)}">${escT(from || '')}</b> → <b style="color:${hueOf(m.agentId)}">${escT(to || '')}</b> #${m.id}</span></div>`, 'enter');
+      emote(EMO[r.r] || '👍');
+    },
+    onView(v) { if (on) title(v); },
+  };
+
+  document.addEventListener('DOMContentLoaded', init); if (document.readyState !== 'loading') init();
+  let inited = false;
+  function init() {
+    if (inited) return; inited = true;
+    $t('#th-open')?.addEventListener('click', open);
+    $t('#th-close')?.addEventListener('click', close);
+    $t('#th-prev')?.addEventListener('click', () => go(-1));
+    $t('#th-next')?.addEventListener('click', () => go(1));
+    $t('#th-dots')?.addEventListener('click', (e) => { const b = e.target.closest('button[data-v]'); if (b) { window.setView(b.dataset.v); title(b.dataset.v); } });
+    $t('#th-chat-toggle')?.addEventListener('click', () => $t('#theater').classList.toggle('no-chat'));
+    document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && on) close(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.target.closest('input, textarea, select')) return;
+      if (on && e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      else if (on && e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+      else if (on && e.key === 'Escape') close();
+      else if ((e.key === 'f' || e.key === 'F') && !e.metaKey && !e.ctrlKey && window.S?.D) (on ? close : open)();
+    });
+    // swipe between views on phones (outside the canvas, which pans)
+    let sx = null;
+    $t('#theater')?.addEventListener('touchstart', (e) => { if (e.target.closest('canvas')) { sx = null; return; } sx = e.touches[0].clientX; }, { passive: true });
+    $t('#theater')?.addEventListener('touchend', (e) => { if (sx == null) return; const dx = e.changedTouches[0].clientX - sx; if (Math.abs(dx) > 60) go(dx < 0 ? 1 : -1); sx = null; });
+  }
+})();
 
 </script>
 </body>
