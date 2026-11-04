@@ -113,7 +113,7 @@ h3 { font: 600 15px var(--serif); margin: 0 0 10px; color: var(--muted); display
 
 /* ---------- the stage ---------- */
 .stage-top { display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-.views { display: inline-flex; align-items: center; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.views { display: inline-flex; align-items: center; gap: 4px; max-width: 100%; overflow-x: auto; scrollbar-width: none; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .views button:not(.info) { background: none; border: 0; border-radius: 999px; padding: 5px 13px; font-size: 13px; font-weight: 500; color: var(--muted); }
 .views button.on { background: var(--brass); color: var(--brass-ink); font-weight: 700; }
 .views .info { margin: 0 4px 0 2px; }
@@ -499,6 +499,18 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
 @media (max-width: 420px) { .preset { flex-direction: column; gap: 0; } .caption { display: none; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
+/* v5: zoom controls and more views */
+.views::-webkit-scrollbar { display: none; }
+.views button:not(.info) { white-space: nowrap; flex: none; }
+.views sup { font-size: 8.5px; font-weight: 800; letter-spacing: .04em; opacity: .75; margin-left: 1px; }
+#viz { touch-action: pan-y; }
+.zoomctl { position: absolute; right: 10px; bottom: 10px; z-index: 3; display: flex; gap: 4px; background: color-mix(in srgb, var(--panel) 80%, transparent); border: 1px solid var(--line); border-radius: 999px; padding: 3px; backdrop-filter: blur(6px); }
+.zoomctl button { width: 28px; height: 28px; border-radius: 999px; border: 0; background: none; color: var(--muted); font: 700 15px var(--sans); line-height: 1; display: grid; place-items: center; }
+.zoomctl button:hover { color: var(--fg); background: var(--panel-2); }
+.zoomctl button.on { color: var(--brass); }
+.app[data-mode="compose"] .zoomctl { display: none; }
+@media (max-width: 600px) { .zoomctl { right: 6px; bottom: 6px; padding: 2px; gap: 2px; } .zoomctl button { width: 24px; height: 24px; font-size: 13px; } }
+
 /* single-file build: brain picker */
 .pick { display: flex; flex-direction: column; gap: 8px; }
 .pick-card { text-align: left; background: var(--bg); border: 1px solid var(--line); border-radius: var(--r); padding: 10px 12px; display: flex; flex-direction: column; gap: 3px; }
@@ -566,9 +578,14 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
         <div class="views" id="views" role="tablist" aria-label="Chamber views">
           <button type="button" data-v="room" class="on">Room</button>
           <button type="button" data-v="network">Network</button>
-          <button type="button" data-v="seats">Seats</button>
+          <button type="button" data-v="sphere">Sphere <sup>3D</sup></button>
+          <button type="button" data-v="ridges">Ridges <sup>3D</sup></button>
+          <button type="button" data-v="chord">Chord</button>
+          <button type="button" data-v="mc">Monte Carlo</button>
+          <button type="button" data-v="phase">Phase</button>
           <button type="button" data-v="flow">Flow</button>
           <button type="button" data-v="pulse">Pulse</button>
+          <button type="button" data-v="seats">Seats</button>
           <button type="button" class="info" data-term="views" aria-label="What the views show">i</button>
         </div>
         <div class="phase">
@@ -733,6 +750,9 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
    network: every agent is a node, clustered by camp; edges are replies and reactions, bundled between camps.
    flow:    each agent's path between camps, from opening statement through every round to the final vote.
    pulse:   camp shares, confidence and reaction intensity over the course of the debate.
+   sphere:  3D opinion space; ridges: 3D share surface; chord: camp-to-camp interaction;
+   mc:      the bootstrap, resampled live; phase: trajectory through (disagreement, confidence).
+   Every view zooms and pans (2D) or orbits (3D).
    All views derive from the message log, so they can be replayed to any point (cutoff). */
 (function () {
   'use strict';
@@ -746,7 +766,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   let st = null; let flow = null; let pulse = null;
   const nodes = new Map();
   let clusters = []; let edges = []; let pulses = []; let sparks = []; let ambient = [];
-  let mouse = null; let hover = null; let PAL = null; let gridCv = null; let lastAmbient = 0;
+  let mouse = null; let mouseS = null; let drag = null; let zc = null; let hover = null; let PAL = null; let gridCv = null; let lastAmbient = 0;
 
   // ---------- color ----------
   const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -772,7 +792,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       camps: ['--c1', '--c2', '--c3', '--c4', '--c5', '--c6'].map(cssVar),
       dark: 0.299 * r + 0.587 * g + 0.114 * b < 120,
     };
-    gridCv = null;
+    gridCv = null; for (const k in glowCache) delete glowCache[k];
   }
   const discColor = {};
   function agentColor(a) { return discColor[a.id] || (discColor[a.id] = hsl2hex(a.hue, 62, 64)); }
@@ -917,6 +937,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   function focusId() { const S = getS(); return hover?.id || S.who || null; }
   function drawNetwork(now) {
     const S = getS(); const add = PAL.dark ? 'lighter' : 'source-over'; const f = focusId();
+    const zk = cam().k; const iz = 1 / Math.pow(zk, 0.72); const lz = 1 / zk;
     // cluster halos
     for (const c of clusters) {
       if (c.disc) continue;
@@ -943,8 +964,8 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       const g = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
       g.addColorStop(0, rgba(neg ? PAL.bad : a.col, alpha)); g.addColorStop(1, rgba(neg ? PAL.bad : b.col, alpha));
       ctx.strokeStyle = g;
-      ctx.lineWidth = (e.type === 'reply' ? 0.7 + 0.25 * Math.min(e.n, 4) : 0.5) + (on ? 0.7 : 0);
-      ctx.setLineDash(e.type === 'react' && neg ? [2, 3] : []);
+      ctx.lineWidth = ((e.type === 'reply' ? 0.7 + 0.25 * Math.min(e.n, 4) : 0.5) + (on ? 0.7 : 0)) * Math.sqrt(lz);
+      ctx.setLineDash(e.type === 'react' && neg ? [2 * lz, 3 * lz] : []);
       ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.quadraticCurveTo(c.x, c.y, b.x, b.y); ctx.stroke();
     }
     ctx.setLineDash([]);
@@ -956,26 +977,29 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       for (let i = 0; i < 9; i++) {
         const tt = Math.max(0, e - i * 0.03); const pt = qpt(a, c, b, tt);
         ctx.fillStyle = rgba(p.col, (1 - i / 9) * (1 - t * 0.6) * 0.9);
-        ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(0.6, 2.8 - i * 0.25), 0, TAU); ctx.fill();
+        ctx.beginPath(); ctx.arc(pt.x, pt.y, Math.max(0.6, 2.8 - i * 0.25) * iz, 0, TAU); ctx.fill();
       }
     }
     ctx.globalCompositeOperation = 'source-over';
+    drawBeams(now, networkPos, networkCurve, [...nodes.keys()]);
     // nodes
     const typing = S.typing || new Set();
     const byId = S.byId || {};
     for (const n of nodes.values()) {
       const dim = f && n.id !== f && !edges.some((e) => (e.from === f && e.to === n.id) || (e.to === f && e.from === n.id));
       const alpha = n.a * (dim ? 0.25 : 1);
-      if (PAL.dark && alpha > 0.5) { ctx.shadowColor = n.col; ctx.shadowBlur = 6 + n.r * 1.6; }
+      const nr = n.r * iz;
+      if (PAL.dark) glowAt(n.x, n.y, nr * 4.6, n.col, alpha * 0.75);
       ctx.fillStyle = rgba(n.col, alpha);
-      ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(0.5, n.r), 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(n.x, n.y, Math.max(0.5 * lz, nr), 0, TAU); ctx.fill();
+      if (zk > 2.2 && byId[n.id]) { ctx.fillStyle = rgba(PAL.fg, Math.min(1, (zk - 2.2)) * alpha * 0.85); ctx.font = sans(10 * lz); ctx.textAlign = 'center'; ctx.fillText(`@${byId[n.id].username}`, n.x, n.y + nr + 11 * lz); ctx.textAlign = 'left'; }
       ctx.shadowBlur = 0;
       const u = byId[n.id]?.username;
       if (u && typing.has(u)) {
         ctx.strokeStyle = rgba(PAL.brass, 0.5 + 0.5 * Math.sin(now * 0.008));
-        ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 3.5 + Math.sin(now * 0.008) * 1.2, 0, TAU); ctx.stroke();
+        ctx.lineWidth = 1.4 * lz; ctx.beginPath(); ctx.arc(n.x, n.y, nr + (3.5 + Math.sin(now * 0.008) * 1.2) * lz, 0, TAU); ctx.stroke();
       }
-      if (n.id === f) { ctx.strokeStyle = PAL.fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(n.x, n.y, n.r + 3, 0, TAU); ctx.stroke(); }
+      if (n.id === f) { ctx.strokeStyle = PAL.fg; ctx.lineWidth = 1.5 * lz; ctx.beginPath(); ctx.arc(n.x, n.y, nr + 3 * lz, 0, TAU); ctx.stroke(); }
     }
     // sparks (reactions)
     sparks = sparks.filter((s) => now - s.t0 < 1400);
@@ -1006,7 +1030,9 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       const cw = ctx.measureText(cnt).width;
       const w = 20 + 6 + tw + 8 + cw + 8; const h = 20;
       let x = c.x - w / 2; let y = c.y - c.R - 22;
-      x = Math.max(4, Math.min(W - w - 4, x)); y = Math.max(4, Math.min(H - h - 4, y));
+      if (zk === 1) { x = Math.max(4, Math.min(W - w - 4, x)); y = Math.max(4, Math.min(H - h - 4, y)); }
+      else y = c.y - c.R * iz - 22;
+      ctx.save(); ctx.translate(c.x, y + h); ctx.scale(lz, lz); ctx.translate(-c.x, -(y + h));
       ctx.fillStyle = rgba(PAL.panel, 0.88); ctx.strokeStyle = rgba(c.color, 0.85); ctx.lineWidth = 1;
       roundRect(x, y, w, h, 6); ctx.fill(); ctx.stroke();
       ctx.fillStyle = c.color; roundRect(x + 3, y + 3, 14, 14, 4); ctx.fill();
@@ -1014,8 +1040,10 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
       ctx.fillText(c.id, x + 10, y + h / 2 + 0.5); ctx.textAlign = 'left';
       ctx.fillStyle = PAL.fg; ctx.font = '600 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(label, x + 23, y + h / 2 + 0.5);
       ctx.fillStyle = PAL.muted; ctx.font = '500 11px "Schibsted Grotesk", system-ui, sans-serif'; ctx.fillText(cnt, x + 23 + tw + 8, y + h / 2 + 0.5);
+      ctx.restore();
     }
     ctx.textBaseline = 'alphabetic';
+    drawSpeechTag(now, networkPos, cam().k);
   }
   function roundRect(x, y, w, h, r) {
     ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
@@ -1407,6 +1435,721 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     return { id: m.agentId, to: t?.agentId || null, camp: m.stance, text: String(m.text || '').replace(/^@[a-z0-9_]+[,:]?\s*/i, ''), t0: performance.now() };
   }
 
+  // =====================================================================
+  // shared: cameras, glow sprites, math helpers, live talk beams
+  // =====================================================================
+  const VIEW3D = new Set(['sphere', 'ridges']);
+  const cams = {};
+  function cam() { return cams[view] || (cams[view] = { x: 0, y: 0, k: 1 }); }
+  const orbits = { sphere: { yaw: 0.7, pitch: 0.38, dist: 3.3, user: -1e9 }, ridges: { yaw: -0.62, pitch: 0.46, dist: 3.5, user: -1e9 } };
+  const ORBIT0 = JSON.parse(JSON.stringify(orbits));
+  function orb() { return orbits[view] || orbits.sphere; }
+  let P3 = null; let lastNow = 0;
+  function stepOrbit(now) {
+    const o = orb(); const dt = Math.min(60, now - (lastNow || now)); lastNow = now;
+    if (now - o.user > 3500 && !matchMedia('(prefers-reduced-motion: reduce)').matches) o.yaw += dt * (view === 'ridges' ? 0.00005 : 0.00011);
+  }
+  function setup3D() { const o = orb(); P3 = { cy: Math.cos(o.yaw), sy: Math.sin(o.yaw), cp: Math.cos(o.pitch), sp: Math.sin(o.pitch), d: o.dist, f: Math.min(W, H) * (view === 'sphere' ? 1.25 : 1.05) }; }
+  // world: y is up. returns screen x, y, depth z, and scale s
+  function proj(x, y, z) {
+    const x1 = x * P3.cy + z * P3.sy; const z1 = -x * P3.sy + z * P3.cy;
+    const y2 = y * P3.cp - z1 * P3.sp; const z2 = y * P3.sp + z1 * P3.cp;
+    const zz = z2 + P3.d; const s = P3.f / Math.max(0.25, zz);
+    return { x: W / 2 + x1 * s, y: H / 2 + 6 - y2 * s, z: zz, s };
+  }
+  const glowCache = {};
+  function glowSprite(col) {
+    if (glowCache[col]) return glowCache[col];
+    const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d');
+    const gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, rgba(col, 0.95)); gr.addColorStop(0.18, rgba(col, 0.45)); gr.addColorStop(0.5, rgba(col, 0.1)); gr.addColorStop(1, rgba(col, 0));
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return (glowCache[col] = c);
+  }
+  function glowAt(x, y, r, col, a) { if (a <= 0.01 || r <= 0.5) return; ctx.globalAlpha = Math.min(1, a); ctx.drawImage(glowSprite(col), x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1; }
+  function hash01(s, k = 0) { let h = 2166136261 ^ (k * 374761393); for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } h ^= h >>> 13; h = Math.imul(h, 1274126177); return ((h >>> 0) % 100003) / 100003; }
+  function fib(i, n) { const y = 1 - (2 * (i + 0.5)) / n; const r = Math.sqrt(Math.max(0, 1 - y * y)); const th = i * GOLDEN; return [Math.cos(th) * r, y, Math.sin(th) * r]; }
+  function giniOf(vals) {
+    if (!vals.length) return { g: 0, lorenz: [[0, 0], [1, 1]] };
+    const mn = Math.min(0, ...vals); const x = vals.map((v) => v - mn).sort((a, b) => a - b); const n = x.length; const tot = x.reduce((a, b) => a + b, 0);
+    if (tot <= 0) return { g: 0, lorenz: [[0, 0], [1, 1]] };
+    let num = 0; x.forEach((v, i) => { num += (2 * (i + 1) - n - 1) * v; });
+    const lorenz = [[0, 0]]; let cum = 0; x.forEach((v, i) => { cum += v; lorenz.push([(i + 1) / n, cum / tot]); });
+    return { g: num / (n * tot), lorenz };
+  }
+  const mono = (px, w = 500) => `${w} ${px}px "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace`;
+  const sans = (px, w = 500) => `${w} ${px}px "Schibsted Grotesk", system-ui, sans-serif`;
+  const fmt = (x, d = 2) => (Number.isFinite(x) ? x.toFixed(d) : '–');
+
+  function liveTalk(now) { return talk.filter((t) => t.kind !== 'vote' && (pinned || now - t.t0 < 6500)); }
+  function fadeOf(t, now) { return pinned ? 1 : Math.min(1, (now - t.t0) / 300) * (1 - Math.max(0, (now - t.t0 - 4800) / 1700)); }
+  // speaker -> addressed agent: a glowing arc with particles; plus thin threads to every listener
+  function drawBeams(now, posOf, curveOf, listeners) {
+    const sp = liveTalk(now); const add = PAL.dark ? 'lighter' : 'source-over';
+    ctx.globalCompositeOperation = add;
+    sp.forEach((t, k) => {
+      const a = posOf(t.id); if (!a) return; const fade = fadeOf(t, now); if (fade <= 0) return;
+      const col = t.id === 'mod' ? PAL.brass : t.camp ? campColor(t.camp) : PAL.brass;
+      const newest = k === sp.length - 1; const age = pinned ? 1 : Math.min(1, (now - t.t0) / 1100);
+      if (newest && listeners) {
+        ctx.lineWidth = 0.55;
+        for (const id of listeners) {
+          if (id === t.id || id === t.to) continue; const b = posOf(id); if (!b) continue;
+          ctx.strokeStyle = rgba(col, (PAL.dark ? 0.11 : 0.08) * fade);
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(a.x + (b.x - a.x) * age, a.y + (b.y - a.y) * age); ctx.stroke();
+        }
+        const ring = pinned ? 0.5 : ((now - t.t0) % 1600) / 1600;
+        ctx.strokeStyle = rgba(col, 0.6 * (1 - ring) * fade); ctx.lineWidth = 1.4;
+        ctx.beginPath(); ctx.arc(a.x, a.y, 6 + ring * 46, 0, TAU); ctx.stroke();
+      }
+      if (t.to) {
+        const pts = curveOf(t.id, t.to); if (!pts || pts.length < 2) return;
+        const m = Math.max(2, Math.round(pts.length * age));
+        for (const [w, al] of [[6, 0.12], [2.2, 0.85]]) {
+          ctx.strokeStyle = rgba(col, al * fade * (newest ? 1 : 0.6)); ctx.lineWidth = w;
+          ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < m; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+        }
+        for (let q = 0; q < 5; q++) {
+          const tt = ((now / 1000) + q / 5) % 1; if (tt > age) continue;
+          const i = tt * (pts.length - 1); const i0 = Math.floor(i); const f = i - i0; const p0 = pts[i0]; const p1 = pts[Math.min(pts.length - 1, i0 + 1)];
+          glowAt(p0.x + (p1.x - p0.x) * f, p0.y + (p1.y - p0.y) * f, 9, col, 0.9 * fade);
+        }
+        const b = pts[pts.length - 1];
+        if (age >= 1) { ctx.strokeStyle = rgba(PAL.brass, (0.5 + 0.4 * Math.sin(now * 0.01)) * fade); ctx.lineWidth = 1.3; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.arc(b.x, b.y, 10, 0, TAU); ctx.stroke(); ctx.setLineDash([]); }
+      }
+    });
+    for (const r of rxLinks) {
+      const a = posOf(r.from); const b = posOf(r.to); if (!a || !b) continue;
+      const t = (now - r.t0) / 1800; const neg = r.r === 'doubt' || r.r === 'wrong';
+      ctx.strokeStyle = rgba(neg ? PAL.bad : PAL.brass, 0.55 * (1 - t)); ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  // a compact tag for whoever is talking right now
+  function drawSpeechTag(now, posOf, scale = 1) {
+    const sp = liveTalk(now); const t = sp[sp.length - 1]; if (!t) return;
+    const a = posOf(t.id); if (!a) return; const fade = fadeOf(t, now); if (fade <= 0) return;
+    const byId = getS().byId || {};
+    const head = t.id === 'mod' ? 'Moderator' : `@${byId[t.id]?.username || ''}${t.to ? ` → @${byId[t.to]?.username || ''}` : ''}`;
+    const body = String(t.text || '').slice(0, 300);
+    ctx.save(); ctx.globalAlpha = fade;
+    const maxW = Math.min(260, W * 0.5) / scale; ctx.font = sans(11 / scale);
+    const lines = wrapText(body, maxW - 18 / scale, 3);
+    ctx.font = sans(11 / scale, 700); const hw = ctx.measureText(head).width;
+    ctx.font = sans(11 / scale); const bw = Math.min(maxW, Math.max(hw, ...lines.map((l) => ctx.measureText(l).width)) + 18 / scale);
+    const bh = (22 + lines.length * 14) / scale;
+    const col = t.id === 'mod' ? PAL.brass : t.camp ? campColor(t.camp) : PAL.fg;
+    let x = a.x + 14 / scale; let y = a.y - bh - 10 / scale;
+    const c = VIEW3D.has(view) ? { x: 0, y: 0, k: 1 } : cam();
+    const sx = (v) => (v * c.k + c.x); const sy = (v) => (v * c.k + c.y);
+    if (sx(x + bw) > W - 6) x = a.x - bw - 14 / scale; if (sy(y) < 6) y = a.y + 14 / scale;
+    ctx.fillStyle = rgba(PAL.panel, 0.93); ctx.strokeStyle = rgba(col, 0.9); ctx.lineWidth = 1.2 / scale;
+    roundRect(x, y, bw, bh, 8 / scale); ctx.fill(); ctx.stroke();
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = col; ctx.font = sans(11 / scale, 700); ctx.fillText(head, x + 9 / scale, y + 15 / scale);
+    ctx.fillStyle = PAL.fg; ctx.font = sans(11 / scale); lines.forEach((l, i) => ctx.fillText(l, x + 9 / scale, y + (30 + i * 14) / scale));
+    ctx.restore();
+  }
+
+  // =====================================================================
+  // live statistics (the Σ overlay)
+  // =====================================================================
+  let stats = null;
+  function computeStats() {
+    if (!st) return null;
+    const D = st.D; const ids = D.agentIds.filter((id) => st.stance[id]?.camp); const n = ids.length;
+    const msgs = st.msgs.filter((m) => m.role === 'agent').length;
+    const lastTs = st.cutoff == null ? Infinity : (st.msgs[st.msgs.length - 1]?.ts || 0);
+    let rx = 0; for (const m of st.msgs) for (const r of m.reactions || []) if (r.ts <= lastTs) rx++;
+    const switches = st.msgs.filter((m) => m.switchedFrom).length;
+    const cred = giniOf(D.agentIds.map((id) => st.scores[id]?.score || 0));
+    if (!n) return { n: 0, msgs, rx, switches, gini: cred.g };
+    const order = st.campOrder; const k = order.length;
+    const p = order.map((c) => (st.counts[c] || 0) / n);
+    const H = -p.filter((x) => x > 0).reduce((a, x) => a + x * Math.log2(x), 0);
+    const confs = ids.map((id) => st.stance[id].confidence || 0); const mu = confs.reduce((a, b) => a + b, 0) / n;
+    const sd = Math.sqrt(confs.reduce((a, b) => a + (b - mu) ** 2, 0) / n);
+    const hhi = p.reduce((a, x) => a + x * x, 0);
+    return { n, k, p, H, Hn: k > 1 ? H / Math.log2(k) : 0, mu, sd, hhi, neff: 1 / hhi, lead: order[0], pmax: Math.max(...p), msgs, rx, switches, gini: cred.g };
+  }
+  let showMath = null; // null = automatic: on when there is room
+  function drawMathHud() {
+    if (!(showMath ?? W >= 900) || !stats || W < 430 || view === 'mc' || view === 'phase' || view === 'pulse' || view === 'room' || view === 'chord') return;
+    const s = stats;
+    const rows = s.n ? [
+      ['H', '= −Σ pᵢ log₂ pᵢ', `${fmt(s.H)} bits`],
+      ['κ', '= 1 − H / log₂k', fmt(1 - s.Hn)],
+      ['N_eff', '= 1 / Σ pᵢ²', fmt(s.neff)],
+      ['c̄ ± σ', '', `${fmt(s.mu, 1)} ± ${fmt(s.sd, 1)}`],
+      ['G', 'credibility Gini', fmt(s.gini)],
+      ['p_max', `camp ${s.lead}`, `${fmt(s.pmax * 100, 1)}%`],
+      ['Δ', 'camp switches', String(s.switches)],
+      ['n', 'msgs · reactions', `${s.msgs} · ${s.rx}`],
+    ] : [['n', 'msgs · reactions', `${s.msgs} · ${s.rx}`], ['G', 'credibility Gini', fmt(s.gini)], ['', 'camps not mapped yet', '']];
+    const lh = 15; const w = 222; const x = W - w - 12; const y = 12; const h = 14 + rows.length * lh;
+    ctx.fillStyle = rgba(PAL.panel, PAL.dark ? 0.72 : 0.86); ctx.strokeStyle = rgba(PAL.brass, 0.35); ctx.lineWidth = 1;
+    roundRect(x, y, w, h, 8); ctx.fill(); ctx.stroke();
+    ctx.textBaseline = 'middle';
+    rows.forEach((r, i) => {
+      const yy = y + 10 + i * lh;
+      ctx.textAlign = 'left'; ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.brass; ctx.fillText(r[0], x + 9, yy);
+      ctx.font = mono(10); ctx.fillStyle = PAL.faint; ctx.fillText(r[1], x + 52, yy);
+      ctx.textAlign = 'right'; ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.fg; ctx.fillText(r[2], x + w - 9, yy);
+    });
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+
+  // =====================================================================
+  // SPHERE: 3D opinion space. Each camp is a pole on the sphere; agents sit
+  // near their camp's pole, further out the more confident they are.
+  // =====================================================================
+  const n3 = new Map(); let poles = []; let pj = new Map(); let starField = null;
+  function layoutSphere() {
+    const S = getS(); const D = st?.D;
+    const agents = (S.agents || []).filter((a) => !D || D.agentIds.includes(a.id));
+    const order = st?.mapped ? st.campOrder.filter((c) => st.counts[c]) : [];
+    const discs = [...new Set(agents.map((a) => a.discipline))];
+    const dirs = {}; poles = [];
+    order.forEach((c, i) => {
+      const v = order.length === 1 ? [0, 1, 0] : order.length === 2 ? [i ? -1 : 1, 0.15, 0] : fib(i, order.length);
+      dirs[c] = v; const cc = D.camps.find((x) => x.id === c);
+      poles.push({ id: c, v, label: cc?.label || c, col: campColor(c), n: st.counts[c] || 0 });
+    });
+    for (const a of agents) {
+      const s = st?.mapped ? st.stance[a.id] : null;
+      let base; let rad;
+      if (s?.camp && dirs[s.camp]) { base = dirs[s.camp]; rad = 0.28 + 0.72 * ((s.confidence ?? 60) / 100); }
+      else { base = fib(Math.max(0, discs.indexOf(a.discipline)), discs.length || 1); rad = 0.95; }
+      const j = s?.camp ? 1.05 : 0.38;
+      let v = [base[0] + (hash01(a.id, 1) - 0.5) * j, base[1] + (hash01(a.id, 2) - 0.5) * j, base[2] + (hash01(a.id, 3) - 0.5) * j];
+      const L = Math.hypot(v[0], v[1], v[2]) || 1; v = v.map((x) => (x / L) * rad);
+      let p = n3.get(a.id);
+      if (!p) { p = { x: v[0] * 0.02, y: v[1] * 0.02, z: v[2] * 0.02, trail: [], ph: hash01(a.id, 9) * TAU }; n3.set(a.id, p); }
+      p.tx = v[0]; p.ty = v[1]; p.tz = v[2];
+      p.col = s?.camp ? campColor(s.camp) : agentColor(a); p.camp = s?.camp || null;
+      const score = Math.max(0, st?.scores[a.id]?.score || 0);
+      p.lit = !D || !st || st.spoke.has(a.id);
+      p.size = p.lit ? 1 + Math.min(1.5, 0.32 * Math.sqrt(score)) : 0.6;
+    }
+    for (const id of [...n3.keys()]) if (!agents.some((a) => a.id === id)) n3.delete(id);
+  }
+  function stepSphere() {
+    for (const p of n3.values()) {
+      const dx = p.tx - p.x; const dy = p.ty - p.y; const dz = p.tz - p.z;
+      p.x += dx * 0.045; p.y += dy * 0.045; p.z += dz * 0.045;
+      const last = p.trail[p.trail.length - 1];
+      if (!last || Math.hypot(p.x - last[0], p.y - last[1], p.z - last[2]) > 0.012) { p.trail.push([p.x, p.y, p.z]); if (p.trail.length > 36) p.trail.shift(); }
+      else if (Math.hypot(dx, dy, dz) < 0.002 && p.trail.length > 1) p.trail.shift();
+    }
+  }
+  function stars() {
+    if (starField) return starField; starField = [];
+    for (let i = 0; i < 260; i++) { const v = fib(i, 260); const r = 4 + hash01(String(i), 4) * 5; starField.push({ x: v[0] * r, y: v[1] * r, z: v[2] * r, b: 0.25 + hash01(String(i), 5) * 0.75, tw: hash01(String(i), 6) * TAU }); }
+    return starField;
+  }
+  function wp(id) { if (id === 'mod') return [0, 0, 0]; const p = n3.get(id); return p ? [p.x, p.y, p.z] : null; }
+  function arc3(a, b, lift = 0.35, steps = 18) {
+    const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2]; const L = Math.hypot(...m) || 1;
+    const c = [m[0] + (m[0] / L) * lift, m[1] + (m[1] / L) * lift, m[2] + (m[2] / L) * lift];
+    const out = [];
+    for (let i = 0; i <= steps; i++) { const t = i / steps; const u = 1 - t; out.push(proj(u * u * a[0] + 2 * u * t * c[0] + t * t * b[0], u * u * a[1] + 2 * u * t * c[1] + t * t * b[1], u * u * a[2] + 2 * u * t * c[2] + t * t * b[2])); }
+    return out;
+  }
+  function drawSphere(now) {
+    stepOrbit(now); setup3D(); stepSphere();
+    const S = getS(); const f = focusId(); const dark = PAL.dark; const add = dark ? 'lighter' : 'source-over';
+    // nebula behind
+    const neb = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.6);
+    neb.addColorStop(0, rgba(PAL.camps[2], dark ? 0.09 : 0.05)); neb.addColorStop(0.5, rgba(PAL.camps[0], dark ? 0.04 : 0.025)); neb.addColorStop(1, rgba(PAL.stage, 0));
+    ctx.fillStyle = neb; ctx.fillRect(0, 0, W, H);
+    // stars rotate with the scene
+    ctx.globalCompositeOperation = add;
+    for (const s of stars()) { const q = proj(s.x, s.y, s.z); if (q.z < 0.3) continue; ctx.fillStyle = rgba(PAL.fg, s.b * (0.35 + 0.25 * Math.sin(now * 0.002 + s.tw)) * (dark ? 1 : 0.5)); ctx.fillRect(q.x, q.y, 1.3, 1.3); }
+    ctx.globalCompositeOperation = 'source-over';
+    // wireframe sphere (r = 1 means 100% sure) and inner shells
+    const seg = (pts, col, base) => {
+      for (let i = 1; i < pts.length; i++) { const a = pts[i - 1]; const b = pts[i]; const depth = (a.z + b.z) / 2 - P3.d; const al = base * (0.35 + 0.65 * Math.max(0, Math.min(1, 0.5 - depth))); ctx.strokeStyle = rgba(col, al); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    };
+    ctx.lineWidth = 0.7;
+    for (let m = 0; m < 12; m++) { const ph = (m * Math.PI) / 12; const pts = []; for (let i = 0; i <= 48; i++) { const th = (i / 48) * TAU; pts.push(proj(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph))); } seg(pts, PAL.camps[0], dark ? 0.16 : 0.2); }
+    for (let l = 1; l < 8; l++) { const th = (l * Math.PI) / 8; const pts = []; for (let i = 0; i <= 64; i++) { const ph = (i / 64) * TAU; pts.push(proj(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph))); } seg(pts, l === 4 ? PAL.brass : PAL.camps[0], l === 4 ? 0.45 : dark ? 0.14 : 0.18); }
+    for (const r of [0.28, 0.64]) { const pts = []; for (let i = 0; i <= 64; i++) { const ph = (i / 64) * TAU; pts.push(proj(Math.cos(ph) * r, 0, Math.sin(ph) * r)); } ctx.setLineDash([2, 4]); seg(pts, PAL.brass, 0.35); ctx.setLineDash([]); }
+    // axes with ticks
+    ctx.lineWidth = 0.8;
+    [[1, 0, 0, 'x'], [0, 1, 0, 'y'], [0, 0, 1, 'z']].forEach(([ax, ay, az, nm]) => {
+      const a = proj(-ax * 1.3, -ay * 1.3, -az * 1.3); const b = proj(ax * 1.3, ay * 1.3, az * 1.3);
+      ctx.strokeStyle = rgba(PAL.faint, 0.35); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      for (let t = -1; t <= 1.001; t += 0.25) { const q = proj(ax * t, ay * t, az * t); ctx.fillStyle = rgba(PAL.faint, 0.6); ctx.fillRect(q.x - 1, q.y - 1, 2, 2); }
+      ctx.fillStyle = rgba(PAL.faint, 0.8); ctx.font = mono(10); ctx.fillText(nm, b.x + 4, b.y);
+    });
+    // project agents
+    pj = new Map();
+    for (const [id, p] of n3) { const bob = Math.sin(now * 0.0011 + p.ph) * 0.006; pj.set(id, { ...proj(p.x, p.y + bob, p.z), id, p }); }
+    const pos = (id) => (id === 'mod' ? proj(0, 0, 0) : pj.get(id));
+    // camp poles, their axes and the field lines from members
+    ctx.globalCompositeOperation = add;
+    for (const c of poles) {
+      const tip = proj(c.v[0] * 1.32, c.v[1] * 1.32, c.v[2] * 1.32); const o = proj(0, 0, 0);
+      ctx.strokeStyle = rgba(c.col, 0.35); ctx.setLineDash([4, 5]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(tip.x, tip.y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.lineWidth = 0.5;
+      for (const q of pj.values()) { if (q.p.camp !== c.id) continue; ctx.strokeStyle = rgba(c.col, f ? 0.02 : 0.07); ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(tip.x, tip.y); ctx.stroke(); }
+      glowAt(tip.x, tip.y, 34 + c.n * 0.6 + 4 * Math.sin(now * 0.003), c.col, 0.85);
+    }
+    // constellations: each agent linked to its two nearest camp-mates
+    const byCamp = {}; for (const q of pj.values()) if (q.p.camp) (byCamp[q.p.camp] = byCamp[q.p.camp] || []).push(q);
+    ctx.lineWidth = 0.7;
+    for (const list of Object.values(byCamp)) {
+      for (const q of list) {
+        const nn = list.filter((o) => o !== q).map((o) => [o, (o.p.x - q.p.x) ** 2 + (o.p.y - q.p.y) ** 2 + (o.p.z - q.p.z) ** 2]).sort((a, b) => a[1] - b[1]).slice(0, 2);
+        for (const [o] of nn) { ctx.strokeStyle = rgba(q.p.col, f ? 0.05 : 0.26); ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(o.x, o.y); ctx.stroke(); }
+      }
+    }
+    // flux: particles stream from each member toward its camp's pole
+    for (const c of poles) {
+      const tipW = [c.v[0] * 1.32, c.v[1] * 1.32, c.v[2] * 1.32];
+      for (const q of pj.values()) {
+        if (q.p.camp !== c.id) continue; const t = ((now / 2600) + q.p.ph) % 1; const p = q.p;
+        const pt = proj(p.x + (tipW[0] - p.x) * t, p.y + (tipW[1] - p.y) * t, p.z + (tipW[2] - p.z) * t);
+        glowAt(pt.x, pt.y, 4.5, c.col, 0.55 * Math.sin(t * Math.PI));
+      }
+    }
+    // trails: camp switchers leave comet tails
+    for (const q of pj.values()) {
+      const tr = q.p.trail; if (tr.length < 3) continue;
+      for (let i = 1; i < tr.length; i++) { const a = proj(...tr[i - 1]); const b = proj(...tr[i]); ctx.strokeStyle = rgba(q.p.col, (i / tr.length) * 0.55); ctx.lineWidth = 1.6 * (i / tr.length); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    }
+    // reply edges as arcs over the sphere
+    for (const e of edges) {
+      if (e.type !== 'reply') continue;
+      const A = wp(e.from); const B = wp(e.to); if (!A || !B) continue;
+      const on = f && (e.from === f || e.to === f); const pts = arc3(A, B, 0.25, 14);
+      const ca = n3.get(e.from)?.col || PAL.brass;
+      ctx.strokeStyle = rgba(ca, f ? (on ? 0.9 : 0.03) : 0.16 + 0.05 * Math.min(e.n, 4)); ctx.lineWidth = on ? 1.6 : 0.8;
+      ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y); for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i].x, pts[i].y); ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    drawBeams(now, pos, (a, b) => { const A = wp(a); const B = wp(b); return A && B ? arc3(A, B, 0.45, 26) : null; }, [...n3.keys()]);
+    // the moderator is the core
+    const core = proj(0, 0, 0); const modOn = liveTalk(now).some((t) => t.id === 'mod') || (S.typingVerb && S.D?.status === 'running');
+    glowAt(core.x, core.y, (modOn ? 40 : 26) + 3 * Math.sin(now * 0.004), PAL.brass, modOn ? 0.9 : 0.5);
+    ctx.fillStyle = PAL.brass; ctx.font = `700 ${Math.round(11 + core.s * 0.02)}px "Newsreader", Georgia, serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('M', core.x, core.y + 1);
+    // agents, far to near
+    const typing = S.typing || new Set(); const byId = S.byId || {};
+    const sorted = [...pj.values()].sort((a, b) => b.z - a.z);
+    const near = Math.min(...sorted.map((q) => q.z)); const far = Math.max(...sorted.map((q) => q.z));
+    const speakers = new Set(liveTalk(now).map((t) => t.id));
+    for (const q of sorted) {
+      const dn = far > near ? (q.z - near) / (far - near) : 0; // 0 near, 1 far
+      const dim = f && q.id !== f && !edges.some((e) => (e.from === f && e.to === q.id) || (e.to === f && e.from === q.id));
+      const r = Math.max(1.4, q.s * 0.017 * q.p.size) * (speakers.has(q.id) ? 1.6 : 1);
+      const a = (q.p.lit ? 1 : 0.35) * (1 - dn * 0.55) * (dim ? 0.25 : 1);
+      q.r = r;
+      if (dark) glowAt(q.x, q.y, r * 4.2, q.p.col, a * 0.75);
+      ctx.fillStyle = rgba(q.p.col, a); ctx.beginPath(); ctx.arc(q.x, q.y, r, 0, TAU); ctx.fill();
+      ctx.fillStyle = rgba('#ffffff', a * 0.55); ctx.beginPath(); ctx.arc(q.x - r * 0.3, q.y - r * 0.3, r * 0.38, 0, TAU); ctx.fill();
+      const u = byId[q.id]?.username;
+      if (u && typing.has(u)) { ctx.strokeStyle = rgba(PAL.brass, 0.5 + 0.5 * Math.sin(now * 0.008)); ctx.lineWidth = 1.3; ctx.beginPath(); ctx.arc(q.x, q.y, r + 4, 0, TAU); ctx.stroke(); }
+      if (q.id === f) { ctx.strokeStyle = PAL.fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(q.x, q.y, r + 3, 0, TAU); ctx.stroke(); }
+    }
+    // sparks
+    sparks = sparks.filter((s) => now - s.t0 < 1400);
+    ctx.font = '13px system-ui, sans-serif'; ctx.textAlign = 'center';
+    for (const s of sparks) { const q = pj.get(s.id); if (!q) continue; const t = (now - s.t0) / 1400; ctx.globalAlpha = t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / 0.85; ctx.fillText(s.ch, q.x, q.y - 8 - t * 22); }
+    ctx.globalAlpha = 1;
+    // pole labels
+    for (const c of poles) {
+      const tip = proj(c.v[0] * 1.32, c.v[1] * 1.32, c.v[2] * 1.32);
+      const share = stats?.n ? Math.round(((st.counts[c.id] || 0) / stats.n) * 100) : 0;
+      const label = `${c.id} · ${c.label.length > 22 ? `${c.label.slice(0, 21)}…` : c.label} · ${share}%`;
+      ctx.font = sans(11, 700); const tw = ctx.measureText(label).width;
+      let x = tip.x - tw / 2 - 8; let y = tip.y - 26; x = Math.max(4, Math.min(W - tw - 20, x)); y = Math.max(4, Math.min(H - 24, y));
+      ctx.fillStyle = rgba(PAL.panel, 0.85); ctx.strokeStyle = rgba(c.col, 0.9); ctx.lineWidth = 1; roundRect(x, y, tw + 16, 19, 6); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = c.col; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, x + 8, y + 10);
+    }
+    if (!poles.length && W >= 520) { ctx.textAlign = 'center'; ctx.font = sans(11); ctx.fillStyle = PAL.faint; ctx.fillText('Agents gather by field until the moderator maps the camps.', W / 2, H - 16); }
+    drawSpeechTag(now, pos);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    // legend
+    if (W >= 520) { ctx.font = mono(10); ctx.fillStyle = PAL.faint; ctx.textAlign = 'left'; ctx.fillText('‖r‖ = confidence · pole = camp · arcs = replies · drag to spin', 12, H - 12); }
+  }
+
+  // =====================================================================
+  // RIDGES: camp share over time as a 3D surface
+  // =====================================================================
+  function drawRidges(now) {
+    if (!pulse) return empty('The surface rises once the camps are mapped.');
+    stepOrbit(now); setup3D();
+    const { pts, order, marks } = pulse; const k = order.length; const dark = PAL.dark;
+    const T = Math.min(72, pts.length); const idx = (i) => (T === 1 ? 0 : Math.round((i * (pts.length - 1)) / (T - 1)));
+    const X = (i) => (T === 1 ? 0 : -1.25 + (2.5 * i) / (T - 1)); const Z = (c) => (k === 1 ? 0 : -0.95 + (1.9 * c) / (k - 1)); const Y = (v) => -0.55 + v * 1.25;
+    const reveal = Math.min(1, (now - revealT) / 1400); const Tn = Math.max(2, Math.round(T * (1 - (1 - reveal) ** 3)));
+    // floor grid
+    ctx.lineWidth = 0.6;
+    for (let g = 0; g <= 10; g++) { const x = -1.25 + g * 0.25; const a = proj(x, -0.55, -1.15); const b = proj(x, -0.55, 1.15); ctx.strokeStyle = rgba(PAL.faint, 0.22); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    for (let g = 0; g <= 8; g++) { const z = -1.15 + g * 0.2875; const a = proj(-1.25, -0.55, z); const b = proj(1.25, -0.55, z); ctx.strokeStyle = rgba(PAL.faint, 0.22); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); }
+    // back wall share ticks
+    ctx.font = mono(9.5); ctx.textBaseline = 'middle';
+    for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+      const a = proj(-1.25, Y(v), -1.15); const b = proj(1.25, Y(v), -1.15);
+      ctx.strokeStyle = rgba(PAL.faint, v === 0 ? 0.3 : 0.14); ctx.setLineDash(v ? [2, 4] : []); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = PAL.faint; ctx.textAlign = 'right'; ctx.fillText(`${v * 100}%`, a.x - 5, a.y);
+    }
+    // round markers on the floor
+    let lastLab = null;
+    for (const mk of marks) {
+      const i = Math.round((mk.i / Math.max(1, pts.length - 1)) * (T - 1)); const a = proj(X(i), -0.55, -1.15); const b = proj(X(i), -0.55, 1.15);
+      const crowded = lastLab && Math.hypot(b.x - lastLab.x, b.y - lastLab.y) < 40; if (!crowded) lastLab = b;
+      ctx.strokeStyle = rgba(PAL.brass, 0.35); ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke(); ctx.setLineDash([]);
+      if (!crowded) { ctx.fillStyle = PAL.brass; ctx.textAlign = 'center'; ctx.font = mono(9.5, 700); ctx.fillText(mk.label, b.x, b.y + 12); }
+    }
+    // surface mesh between camps (cross sections)
+    const surf = order.map((c, ci) => { const row = []; for (let i = 0; i < Tn; i++) row.push(proj(X(i), Y(pts[idx(i)].shares[c] || 0), Z(ci))); return row; });
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < Tn; i += 2) { ctx.strokeStyle = rgba(PAL.fg, dark ? 0.1 : 0.14); ctx.beginPath(); surf.forEach((row, ci) => (ci ? ctx.lineTo(row[i].x, row[i].y) : ctx.moveTo(row[i].x, row[i].y))); ctx.stroke(); }
+    // ridges, far to near
+    const ordIdx = order.map((c, ci) => ({ c, ci, z: proj(0, 0, Z(ci)).z })).sort((a, b) => b.z - a.z);
+    for (const { c, ci } of ordIdx) {
+      const col = campColor(c); const row = surf[ci];
+      const fl0 = proj(X(0), -0.55, Z(ci)); const fl1 = proj(X(Tn - 1), -0.55, Z(ci));
+      ctx.beginPath(); ctx.moveTo(fl0.x, fl0.y); row.forEach((p) => ctx.lineTo(p.x, p.y)); ctx.lineTo(fl1.x, fl1.y); ctx.closePath();
+      const top = Math.min(...row.map((p) => p.y)); const g = ctx.createLinearGradient(0, top, 0, fl0.y);
+      g.addColorStop(0, rgba(col, dark ? 0.42 : 0.3)); g.addColorStop(1, rgba(col, 0.03)); ctx.fillStyle = g; ctx.fill();
+      ctx.lineWidth = 0.5; ctx.strokeStyle = rgba(col, 0.25);
+      for (let i = 0; i < Tn; i += 3) { const fl = proj(X(i), -0.55, Z(ci)); ctx.beginPath(); ctx.moveTo(row[i].x, row[i].y); ctx.lineTo(fl.x, fl.y); ctx.stroke(); }
+      if (dark) { ctx.shadowColor = col; ctx.shadowBlur = 12; }
+      ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath(); row.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y))); ctx.stroke(); ctx.shadowBlur = 0;
+      const h = row[Tn - 1]; glowAt(h.x, h.y, 16, col, 0.9);
+      ctx.fillStyle = col; ctx.font = mono(10.5, 700); ctx.textAlign = 'left'; ctx.fillText(`${c} ${Math.round((pts[idx(Tn - 1)].shares[c] || 0) * 100)}%`, h.x + 9, h.y - 2);
+      const l0 = proj(X(0) - 0.08, -0.55, Z(ci)); ctx.textAlign = 'right'; ctx.font = mono(10, 700); ctx.fillText(c, l0.x, l0.y);
+    }
+    // confidence ribbon in front
+    const zc = k === 1 ? 0.5 : 1.1; ctx.strokeStyle = rgba(PAL.brass, 0.9); ctx.lineWidth = 1.4; ctx.setLineDash([5, 4]); ctx.beginPath();
+    for (let i = 0; i < Tn; i++) { const p = proj(X(i), Y(pts[idx(i)].conf), zc); i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y); }
+    ctx.stroke(); ctx.setLineDash([]);
+    const cl = proj(X(Tn - 1), Y(pts[idx(Tn - 1)].conf), zc); ctx.fillStyle = PAL.brass; ctx.font = mono(10); ctx.textAlign = 'left'; ctx.fillText(`c̄ ${Math.round(pts[idx(Tn - 1)].conf * 100)}`, cl.x + 6, cl.y);
+    // axis names
+    const ax = proj(1.4, -0.55, 1.15); ctx.fillStyle = PAL.muted; ctx.font = mono(10); ctx.fillText('t →', ax.x, ax.y);
+    const ay = proj(-1.25, Y(1.08), -1.15); ctx.textAlign = 'center'; ctx.fillText('share s(c,t)', ay.x, ay.y - 6);
+    if (W >= 520) { ctx.textAlign = 'left'; ctx.fillStyle = PAL.faint; ctx.font = mono(10); ctx.fillText('surface s(c,t) · dashed: mean confidence · drag to rotate', 12, H - 12); }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+
+  // =====================================================================
+  // CHORD: who argues with whom, camp to camp
+  // =====================================================================
+  let chord = null;
+  function computeChord() {
+    if (!st?.mapped) return null;
+    const order = st.campOrder.filter((c) => st.counts[c]); const k = order.length; if (!k) return null;
+    const ix = Object.fromEntries(order.map((c, i) => [c, i]));
+    const M = order.map(() => order.map(() => 0)); const N = order.map(() => order.map(() => 0));
+    for (const e of st.edges) {
+      const a = ix[st.stance[e.from]?.camp]; const b = ix[st.stance[e.to]?.camp]; if (a == null || b == null) continue;
+      const w = e.type === 'reply' ? e.n : 0.5 * e.n; M[a][b] += w; N[a][b] += e.neg;
+    }
+    const members = order.map((c) => st.D.agentIds.filter((id) => st.stance[id]?.camp === c).sort((x, y) => (st.scores[y]?.score || 0) - (st.scores[x]?.score || 0)));
+    return { order, M, N, members, total: M.flat().reduce((a, b) => a + b, 0) };
+  }
+  let chordHover = null;
+  function drawChord(now) {
+    if (!chord) return empty('The chord diagram appears once the camps are mapped.');
+    const { order, M, N, members, total } = chord; const k = order.length; const dark = PAL.dark;
+    const side = W >= 700; const cx = side ? W * 0.4 : W / 2; const cy = H / 2 + 6; const R = Math.min(side ? W * 0.3 : W * 0.38, H * 0.36);
+    const n = members.reduce((a, m) => a + m.length, 0) || 1; const gap = 0.05; const span = TAU - gap * k;
+    const arcs = []; let a0 = -Math.PI / 2;
+    order.forEach((c, i) => { const w = (members[i].length / n) * span; arcs.push({ c, i, a0, a1: a0 + w, col: campColor(c) }); a0 += w + gap; });
+    const reveal = Math.min(1, (now - revealT) / 1000); const ease = 1 - (1 - reveal) ** 3;
+    // segments of each arc split by interaction target
+    const segs = arcs.map((A, i) => {
+      const row = M[i]; const rs = row.reduce((a, b) => a + b, 0) || 1; let s = A.a0; const out = [];
+      row.forEach((v, j) => { const w = (v / rs) * (A.a1 - A.a0); out.push([s, s + w]); s += w; });
+      return out;
+    });
+    const P = (ang, r = R) => ({ x: cx + Math.cos(ang) * r, y: cy + Math.sin(ang) * r });
+    const hv = chordHover; const lead = liveTalk(now).slice(-1)[0];
+    const leadA = lead && st.stance[lead.id]?.camp; const leadB = lead?.to && st.stance[lead.to]?.camp;
+    // ribbons
+    ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+    for (let i = 0; i < k; i++) for (let j = i; j < k; j++) {
+      const v = M[i][j] + (i === j ? 0 : M[j][i]); if (v <= 0) continue;
+      let s1 = segs[i][j]; let s2 = segs[j][i];
+      if (i === j) { const m = (s1[0] + s1[1]) / 2; s2 = [m, s1[1]]; s1 = [s1[0], m]; }
+      const on = hv == null || hv === i || hv === j; const live = leadA && leadB && ((order[i] === leadA && order[j] === leadB) || (order[j] === leadA && order[i] === leadB));
+      const negShare = (N[i][j] + (i === j ? 0 : N[j][i])) / Math.max(1, v);
+      const r = R - 3;
+      ctx.beginPath(); const p0 = P(s1[0], r); ctx.moveTo(p0.x, p0.y);
+      ctx.arc(cx, cy, r, s1[0], s1[0] + (s1[1] - s1[0]) * ease);
+      const q0 = P(s2[0], r); ctx.quadraticCurveTo(cx, cy, q0.x, q0.y);
+      ctx.arc(cx, cy, r, s2[0], s2[0] + (s2[1] - s2[0]) * ease);
+      ctx.quadraticCurveTo(cx, cy, p0.x, p0.y); ctx.closePath();
+      const g = ctx.createLinearGradient(p0.x, p0.y, q0.x, q0.y);
+      const al = (on ? (dark ? 0.32 : 0.28) : 0.04) + (live ? 0.35 + 0.2 * Math.sin(now * 0.008) : 0);
+      g.addColorStop(0, rgba(arcs[i].col, al)); g.addColorStop(1, rgba(arcs[j].col, al)); ctx.fillStyle = g; ctx.fill();
+      if (negShare > 0.25 && on) { ctx.strokeStyle = rgba(PAL.bad, 0.5 * negShare); ctx.setLineDash([3, 3]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]); }
+      // particles flowing along the ribbon centre line
+      if (on && reveal >= 1) {
+        const ma = (s1[0] + s1[1]) / 2; const mb = (s2[0] + s2[1]) / 2; const A = P(ma, r); const B = P(mb, r); const C = { x: cx, y: cy };
+        const cnt = Math.min(6, 1 + Math.round(v / 3));
+        for (let q = 0; q < cnt; q++) { const t = ((now / 2600) + q / cnt + i * 0.13 + j * 0.07) % 1; const pt = qpt(A, C, B, t); glowAt(pt.x, pt.y, 7, t < 0.5 ? arcs[i].col : arcs[j].col, 0.8); }
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    // outer arcs and per-agent ticks (tick length = credibility)
+    for (const A of arcs) {
+      ctx.strokeStyle = A.col; ctx.lineWidth = 10; ctx.lineCap = 'butt';
+      ctx.beginPath(); ctx.arc(cx, cy, R + 6, A.a0, A.a0 + (A.a1 - A.a0) * ease); ctx.stroke();
+      const mem = members[A.i]; const step = (A.a1 - A.a0) / Math.max(1, mem.length);
+      mem.forEach((id, q) => {
+        const ang = A.a0 + step * (q + 0.5); const sc = Math.max(0, st.scores[id]?.score || 0); const len = 4 + Math.min(26, 4 * Math.sqrt(sc));
+        const p1 = P(ang, R + 13); const p2 = P(ang, R + 13 + len * ease);
+        ctx.strokeStyle = rgba(A.col, 0.45 + Math.min(0.5, sc / 12)); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      });
+      const mid = (A.a0 + A.a1) / 2; const lp = P(mid, R + 50); const cc = st.D.camps.find((x) => x.id === A.c);
+      ctx.textAlign = Math.cos(mid) > 0.25 ? 'left' : Math.cos(mid) < -0.25 ? 'right' : 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = A.col; ctx.font = sans(12, 700); ctx.fillText(`${A.c} · ${members[A.i].length}`, lp.x, lp.y - 7);
+      ctx.fillStyle = PAL.muted; ctx.font = sans(10.5); const t = cc?.label || ''; ctx.fillText(t.length > 22 ? `${t.slice(0, 21)}…` : t, lp.x, lp.y + 8);
+    }
+    // centre readout
+    ctx.textAlign = 'center'; ctx.fillStyle = PAL.fg; ctx.font = mono(18, 700); ctx.fillText(String(Math.round(total)), cx, cy - 6);
+    ctx.fillStyle = PAL.faint; ctx.font = mono(9.5); ctx.fillText('weighted interactions', cx, cy + 12);
+    // the matrix itself
+    if (side) {
+      const x0 = W * 0.72; const cell = Math.min(34, (W - x0 - 24) / (k + 1), (H - 120) / (k + 1)); const y0 = 48;
+      const mx = Math.max(1, ...M.flat());
+      ctx.font = mono(10, 700); ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.fillText('Mᵢⱼ  from i → to j', x0, y0 - 18);
+      order.forEach((c, j) => { ctx.fillStyle = campColor(c); ctx.textAlign = 'center'; ctx.fillText(c, x0 + cell * (j + 1.5), y0 - 2); });
+      order.forEach((c, i) => {
+        ctx.fillStyle = campColor(c); ctx.textAlign = 'center'; ctx.fillText(c, x0 + cell * 0.5, y0 + cell * (i + 0.5) + 8);
+        order.forEach((d, j) => {
+          const v = M[i][j]; const t = v / mx; const x = x0 + cell * (j + 1); const y = y0 + 8 + cell * i;
+          ctx.fillStyle = rgba(i === j ? campColor(c) : PAL.brass, 0.08 + 0.75 * t); ctx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+          ctx.fillStyle = t > 0.55 ? '#0e1a15' : PAL.fg; ctx.font = mono(Math.min(11, cell * 0.34), 600); ctx.fillText(v ? (v % 1 ? v.toFixed(1) : String(v)) : '·', x + cell / 2, y + cell / 2 + 1);
+        });
+      });
+      const yb = y0 + 8 + cell * k + 22; const inside = order.reduce((a, _, i) => a + M[i][i], 0);
+      const lines = [`within-camp  ${fmt((inside / Math.max(1, total)) * 100, 1)}%`, `across camps ${fmt((1 - inside / Math.max(1, total)) * 100, 1)}%`, `hostile (👎🤔) ${fmt((N.flat().reduce((a, b) => a + b, 0) / Math.max(1, total)) * 100, 1)}%`];
+      ctx.textAlign = 'left'; ctx.font = mono(10.5); ctx.fillStyle = PAL.muted; lines.forEach((l, i) => ctx.fillText(l, x0, yb + i * 16));
+      ctx.fillStyle = PAL.faint; ctx.font = mono(9.5); ctx.fillText('ticks: one per agent, length ∝ √credibility', x0, yb + 58);
+    }
+    chord.arcs = arcs; chord.cx = cx; chord.cy = cy; chord.R = R;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+  }
+
+  // =====================================================================
+  // MONTE CARLO: the bootstrap, live
+  // =====================================================================
+  const MC = { key: '', n: 0, B: 10000, bins: 50, hist: {}, wins: {}, conv: [], drops: [], ag: [], order: [], sums: {} };
+  function mcPrepare() {
+    if (!st?.mapped) { MC.key = ''; MC.ag = []; return; }
+    const ag = st.D.agentIds.map((id) => st.stance[id]).filter((s) => s?.camp).map((s) => ({ c: s.camp, w: 0.25 + (s.confidence || 0) / 100 }));
+    const order = st.campOrder.filter((c) => st.counts[c]);
+    const key = ag.map((a) => a.c + a.w.toFixed(2)).join('|');
+    if (key === MC.key) return;
+    Object.assign(MC, { key, n: 0, ag, order, hist: Object.fromEntries(order.map((c) => [c, new Array(MC.bins).fill(0)])), wins: Object.fromEntries(order.map((c) => [c, 0])), conv: [], drops: [], t0: performance.now() });
+    MC.obs = Object.fromEntries(order.map((c) => [c, ag.filter((a) => a.c === c).reduce((x, a) => x + a.w, 0) / Math.max(1e-9, ag.reduce((x, a) => x + a.w, 0))]));
+  }
+  function mcStep(now) {
+    if (!MC.ag.length || MC.n >= MC.B) return;
+    const per = MC.n < 400 ? 25 : 140; const N = MC.ag.length; const sums = {};
+    for (let r = 0; r < per && MC.n < MC.B; r++) {
+      for (const c of MC.order) sums[c] = 0; let tot = 0;
+      for (let i = 0; i < N; i++) { const a = MC.ag[(Math.random() * N) | 0]; sums[a.c] += a.w; tot += a.w; }
+      let best = MC.order[0]; for (const c of MC.order) if (sums[c] > sums[best]) best = c;
+      MC.wins[best]++; MC.n++;
+      for (const c of MC.order) MC.hist[c][Math.min(MC.bins - 1, ((sums[c] / tot) * MC.bins) | 0)]++;
+      if (MC.n % 40 === 0) MC.conv.push(MC.order.map((c) => MC.wins[c] / MC.n));
+      if (r < 2) MC.drops.push({ c: best, s: sums[best] / tot, t0: now });
+    }
+    if (MC.drops.length > 60) MC.drops.splice(0, MC.drops.length - 60);
+  }
+  function drawMC(now) {
+    mcStep(now);
+    if (!MC.ag.length) return empty('Monte Carlo starts once agents take sides.');
+    const dark = PAL.dark; const order = MC.order; const side = W >= 640;
+    const x0 = 46; const x1 = side ? W * 0.62 : W - 16; const y0 = 92; const y1 = side ? H - 62 : H * 0.6;
+    // share axis range
+    let mxS = 0; for (const c of order) { const h = MC.hist[c]; for (let b = MC.bins - 1; b >= 0; b--) if (h[b]) { mxS = Math.max(mxS, (b + 1) / MC.bins); break; } }
+    const sMax = Math.min(1, Math.max(0.3, mxS + 0.08));
+    const X = (s) => x0 + (s / sMax) * (x1 - x0);
+    // header: the estimator
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    ctx.font = mono(11.5, 700); ctx.fillStyle = PAL.fg; ctx.fillText('P̂(win c) = (1/B) Σ_b 1[ argmax_k Σ_i w_i·1(camp_i=k) = c ]', 14, 22);
+    ctx.font = mono(10.5); ctx.fillStyle = PAL.muted; ctx.fillText(`w_i = 0.25 + conf_i/100   resample N=${MC.ag.length} agents with replacement   B = ${MC.n.toLocaleString()} / ${MC.B.toLocaleString()}`, 14, 40);
+    const prog = MC.n / MC.B; ctx.fillStyle = rgba(PAL.line, 1); ctx.fillRect(14, 48, Math.min(W - 28, 360), 3); ctx.fillStyle = PAL.brass; ctx.fillRect(14, 48, Math.min(W - 28, 360) * prog, 3);
+    // axes
+    ctx.strokeStyle = rgba(PAL.line, 1); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x0, y1); ctx.lineTo(x1, y1); ctx.stroke();
+    ctx.font = mono(9.5); ctx.fillStyle = PAL.faint; ctx.textAlign = 'center';
+    for (let s = 0; s <= sMax + 1e-9; s += sMax > 0.6 ? 0.1 : 0.05) { ctx.fillText(`${Math.round(s * 100)}%`, X(s), y1 + 13); ctx.fillRect(X(s), y1, 1, 4); }
+    ctx.fillText('weighted vote share in a resample', (x0 + x1) / 2, y1 + 28);
+    // densities
+    const maxD = Math.max(1, ...order.map((c) => Math.max(...MC.hist[c])));
+    const smooth = (h) => h.map((_, b) => { let s = 0; let w = 0; for (let d = -2; d <= 2; d++) { const v = h[b + d]; if (v == null) continue; const k = Math.exp(-(d * d) / 2); s += v * k; w += k; } return s / w; });
+    ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over';
+    for (const c of order) {
+      const col = campColor(c); const h = smooth(MC.hist[c]); const Y = (v) => y1 - (v / maxD) * (y1 - y0) * 0.95;
+      ctx.beginPath(); ctx.moveTo(X(0), y1);
+      for (let b = 0; b < MC.bins; b++) { const s = (b + 0.5) / MC.bins; if (s > sMax) break; ctx.lineTo(X(s), Y(h[b])); }
+      ctx.lineTo(X(Math.min(sMax, 1)), y1); ctx.closePath();
+      const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, rgba(col, dark ? 0.35 : 0.3)); g.addColorStop(1, rgba(col, 0.02)); ctx.fillStyle = g; ctx.fill();
+      ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); let started = false;
+      for (let b = 0; b < MC.bins; b++) { const s = (b + 0.5) / MC.bins; if (s > sMax) break; const y = Y(h[b]); started ? ctx.lineTo(X(s), y) : (ctx.moveTo(X(s), y), started = true); }
+      ctx.stroke();
+    }
+    // falling resamples
+    MC.drops = MC.drops.filter((d) => now - d.t0 < 900);
+    for (const d of MC.drops) { const t = (now - d.t0) / 900; const y = y0 - 10 + (y1 - y0) * t * t; glowAt(X(d.s), y, 8, campColor(d.c), 1 - t * 0.6); }
+    ctx.globalCompositeOperation = 'source-over';
+    // per camp: mean, 90% interval (bracket above the axis) and a label at the peak
+    const placed = [];
+    order.forEach((c, ci) => {
+      const h = MC.hist[c]; const tot = h.reduce((a, b) => a + b, 0) || 1; let cum = 0; let lo = 0; let hi = 0; let mean = 0; let pk = 0;
+      h.forEach((v, b) => { const s = (b + 0.5) / MC.bins; mean += (v / tot) * s; const pc = cum; cum += v / tot; if (pc < 0.05 && cum >= 0.05) lo = s; if (pc < 0.95 && cum >= 0.95) hi = s; if (v > h[pk]) pk = b; });
+      const col = campColor(c); const yb = y1 - 5 - ci * 5;
+      ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(Math.min(lo, sMax)), yb); ctx.lineTo(X(Math.min(hi, sMax)), yb); ctx.stroke();
+      const sm = smooth(h); const py = y1 - (sm[pk] / maxD) * (y1 - y0) * 0.95; const px = X(Math.min(sMax, (pk + 0.5) / MC.bins));
+      let ly = Math.max(y0 - 4, py - 18);
+      while (placed.some((q) => Math.abs(q.x - px) < 130 && Math.abs(q.y - ly) < 26)) ly += 26;
+      placed.push({ x: px, y: ly });
+      ctx.fillStyle = col; ctx.font = mono(10.5, 700); ctx.textAlign = 'center';
+      ctx.fillText(`${c}  μ=${(mean * 100).toFixed(1)}%`, px, ly);
+      ctx.font = mono(9.5); ctx.fillStyle = PAL.muted; ctx.fillText(`90% CI [${Math.round(lo * 100)}, ${Math.round(hi * 100)}]`, px, ly + 12);
+    });
+    ctx.textAlign = 'left';
+    // right: P(win) bars and convergence funnel
+    const rx0 = side ? W * 0.67 : 16; const rx1 = W - 16; let ry = side ? 70 : y1 + 60;
+    ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.fillText('P̂(win)  ± 1.96·√(p(1−p)/B)', rx0, ry - 8);
+    for (const c of order) {
+      const p = MC.n ? MC.wins[c] / MC.n : 0; const se = MC.n ? 1.96 * Math.sqrt((p * (1 - p)) / MC.n) : 0; const bw = rx1 - rx0 - 92;
+      ctx.fillStyle = rgba(PAL.line, 1); ctx.fillRect(rx0 + 22, ry + 2, bw, 10);
+      ctx.fillStyle = campColor(c); ctx.fillRect(rx0 + 22, ry + 2, bw * p, 10);
+      ctx.strokeStyle = PAL.fg; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(rx0 + 22 + bw * Math.max(0, p - se), ry + 7); ctx.lineTo(rx0 + 22 + bw * Math.min(1, p + se), ry + 7); ctx.stroke();
+      ctx.font = mono(10.5, 700); ctx.fillStyle = campColor(c); ctx.fillText(c, rx0, ry + 11);
+      ctx.fillStyle = PAL.fg; ctx.textAlign = 'right'; ctx.fillText(`${(p * 100).toFixed(1)}%`, rx1, ry + 11); ctx.textAlign = 'left';
+      ry += 20;
+    }
+    if (side && MC.conv.length > 1) {
+      const cy0 = ry + 26; const cy1 = Math.min(H - 62, cy0 + 190); const cx0 = rx0 + 22; const cx1 = rx1;
+      ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.muted; ctx.fillText('convergence of P̂ as B grows', rx0, cy0 - 10);
+      ctx.strokeStyle = rgba(PAL.line, 1); ctx.strokeRect(cx0, cy0, cx1 - cx0, cy1 - cy0);
+      const L = MC.conv.length; const XX = (i) => cx0 + (i / Math.max(1, (MC.B / 40) - 1)) * (cx1 - cx0); const YY = (p) => cy1 - p * (cy1 - cy0);
+      order.forEach((c, ci) => {
+        const col = campColor(c);
+        if (ci === 0) { // funnel for the leader
+          ctx.beginPath();
+          for (let i = 0; i < L; i++) { const p = MC.conv[i][ci]; const n = (i + 1) * 40; const se = 1.96 * Math.sqrt((p * (1 - p)) / n); i ? ctx.lineTo(XX(i), YY(Math.min(1, p + se))) : ctx.moveTo(XX(i), YY(Math.min(1, p + se))); }
+          for (let i = L - 1; i >= 0; i--) { const p = MC.conv[i][ci]; const n = (i + 1) * 40; const se = 1.96 * Math.sqrt((p * (1 - p)) / n); ctx.lineTo(XX(i), YY(Math.max(0, p - se))); }
+          ctx.closePath(); ctx.fillStyle = rgba(col, 0.18); ctx.fill();
+        }
+        ctx.strokeStyle = col; ctx.lineWidth = 1.5; ctx.beginPath();
+        for (let i = 0; i < L; i++) { const y = YY(MC.conv[i][ci]); i ? ctx.lineTo(XX(i), y) : ctx.moveTo(XX(i), y); } ctx.stroke();
+      });
+      ctx.font = mono(9.5); ctx.fillStyle = PAL.faint; ctx.fillText('0', cx0 - 10, cy1); ctx.fillText('1', cx0 - 10, cy0 + 8); ctx.textAlign = 'right'; ctx.fillText(`B → ${MC.B.toLocaleString()}`, cx1, cy1 + 13); ctx.textAlign = 'left';
+    }
+    ctx.textAlign = 'left';
+  }
+
+  // =====================================================================
+  // PHASE: the debate as a trajectory through (disagreement, confidence)
+  // =====================================================================
+  let phase = null;
+  function computePhase() {
+    if (!pulse) return null;
+    const { pts, order } = pulse; const k = order.length; const lg = (x) => (x > 0 ? Math.log2(x) : 0);
+    const ser = pts.map((p) => { const v = order.map((c) => p.shares[c] || 0); const H = -v.reduce((a, x) => a + x * lg(x), 0); return { v, H, Hn: k > 1 ? H / Math.log2(k) : 0, conf: p.conf, rx: p.rx, id: p.id }; });
+    for (let i = 0; i < ser.length; i++) {
+      if (!i) { ser[i].jsd = 0; continue; }
+      const P = ser[i - 1].v; const Q = ser[i].v; const M = P.map((x, j) => (x + Q[j]) / 2);
+      const kl = (A) => A.reduce((a, x, j) => a + (x > 0 && M[j] > 0 ? x * Math.log2(x / M[j]) : 0), 0);
+      ser[i].jsd = 0.5 * kl(P) + 0.5 * kl(Q);
+    }
+    const cred = giniOf((st?.D.agentIds || []).map((id) => st.scores[id]?.score || 0));
+    return { ser, k, gini: cred.g, lorenz: cred.lorenz };
+  }
+  function drawPhase(now) {
+    if (!phase) return empty('The phase portrait starts once the camps are mapped.');
+    const { ser, gini, lorenz, k } = phase; const dark = PAL.dark; const side = W >= 640;
+    const x0 = 56; const x1 = side ? W * 0.6 : W - 18; const y0 = 46; const y1 = side ? H - 46 : H * 0.62;
+    let hx0 = Math.min(...ser.map((s) => s.Hn)); let hx1 = Math.max(...ser.map((s) => s.Hn)); let cy0 = Math.min(...ser.map((s) => s.conf)); let cy1 = Math.max(...ser.map((s) => s.conf));
+    const padx = Math.max(0.06, (hx1 - hx0) * 0.18); const pady = Math.max(0.05, (cy1 - cy0) * 0.18);
+    hx0 = Math.max(0, hx0 - padx); hx1 = Math.min(1, hx1 + padx); cy0 = Math.max(0, cy0 - pady); cy1 = Math.min(1, cy1 + pady);
+    const X = (h) => x0 + ((h - hx0) / Math.max(1e-6, hx1 - hx0)) * (x1 - x0); const Y = (c) => y1 - ((c - cy0) / Math.max(1e-6, cy1 - cy0)) * (y1 - y0);
+    ctx.font = mono(11.5, 700); ctx.fillStyle = PAL.fg; ctx.textAlign = 'left'; ctx.fillText('γ(t) = ( H(p_t)/log₂k , c̄_t )', 14, 22);
+    // grid
+    ctx.font = mono(9.5); ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const h = hx0 + (i / 5) * (hx1 - hx0); const c = cy0 + (i / 5) * (cy1 - cy0);
+      ctx.strokeStyle = rgba(PAL.line, 0.8); ctx.setLineDash([2, 4]);
+      ctx.beginPath(); ctx.moveTo(X(h), y0); ctx.lineTo(X(h), y1); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x0, Y(c)); ctx.lineTo(x1, Y(c)); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = PAL.faint; ctx.textAlign = 'center'; ctx.fillText(h.toFixed(2), X(h), y1 + 13); ctx.textAlign = 'right'; ctx.fillText(Math.round(c * 100), x0 - 6, Y(c) + 3);
+    }
+    ctx.textAlign = 'center'; ctx.fillStyle = PAL.muted; ctx.fillText('normalized entropy H/log₂k  →  more disagreement', (x0 + x1) / 2, y1 + 28);
+    ctx.save(); ctx.translate(16, (y0 + y1) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('mean confidence c̄', 0, 0); ctx.restore();
+    // isolines of certainty (1 − H)·c̄ = const
+    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+    for (const q of [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]) {
+      ctx.strokeStyle = rgba(PAL.brass, 0.22); ctx.lineWidth = 1; ctx.beginPath(); let st0 = false;
+      for (let i = 0; i <= 60; i++) { const h = hx0 + (i / 60) * (hx1 - hx0); if (h >= 0.999) break; const c = q / (1 - h); if (c > 1.2) break; const x = X(h); const y = Y(c); st0 ? ctx.lineTo(x, y) : (ctx.moveTo(x, y), st0 = true); }
+      ctx.stroke();
+      const hL = hx0 + 0.04 * (hx1 - hx0); const cL = q / (1 - hL); if (cL >= cy0 && cL <= cy1) { ctx.fillStyle = rgba(PAL.brass, 0.6); ctx.font = mono(9); ctx.textAlign = 'left'; ctx.fillText(`(1−Ĥ)c̄=${q}`, X(hL) + 2, Y(cL) - 3); }
+    }
+    // trajectory, coloured by time
+    const reveal = Math.min(1, (now - revealT) / 1600); const L = Math.max(2, Math.round(ser.length * (1 - (1 - reveal) ** 3)));
+    ctx.globalCompositeOperation = dark ? 'lighter' : 'source-over'; ctx.lineCap = 'round';
+    for (let i = 1; i < L; i++) {
+      const a = ser[i - 1]; const b = ser[i]; const t = i / Math.max(1, ser.length - 1);
+      const col = hsl2hex(190 + 150 * t, 85, dark ? 62 : 45);
+      ctx.strokeStyle = rgba(col, 0.25); ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(X(a.Hn), Y(a.conf)); ctx.lineTo(X(b.Hn), Y(b.conf)); ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(X(a.Hn), Y(a.conf)); ctx.lineTo(X(b.Hn), Y(b.conf)); ctx.stroke();
+      if (i % Math.max(3, Math.round(ser.length / 10)) === 0) { // direction arrows
+        const ang = Math.atan2(Y(b.conf) - Y(a.conf), X(b.Hn) - X(a.Hn)); const x = X(b.Hn); const y = Y(b.conf);
+        ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(x + Math.cos(ang) * 6, y + Math.sin(ang) * 6); ctx.lineTo(x + Math.cos(ang + 2.5) * 5, y + Math.sin(ang + 2.5) * 5); ctx.lineTo(x + Math.cos(ang - 2.5) * 5, y + Math.sin(ang - 2.5) * 5); ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over'; ctx.lineCap = 'butt';
+    // rug plots (projections onto the axes)
+    for (let i = 0; i < L; i++) { const s = ser[i]; const col = hsl2hex(190 + 150 * (i / Math.max(1, ser.length - 1)), 85, 60); ctx.fillStyle = rgba(col, 0.55); ctx.fillRect(X(s.Hn) - 0.5, y1 - 6, 1, 6); ctx.fillRect(x0, Y(s.conf) - 0.5, 6, 1); }
+    ctx.restore();
+    const s0 = ser[0]; const sN = ser[L - 1];
+    ctx.fillStyle = PAL.muted; ctx.font = mono(10); ctx.textAlign = 'left'; ctx.fillText('t₀', X(s0.Hn) + 6, Y(s0.conf) - 6);
+    glowAt(X(sN.Hn), Y(sN.conf), 18 + 3 * Math.sin(now * 0.006), hsl2hex(340, 85, 62), 1);
+    ctx.fillStyle = PAL.fg; ctx.font = mono(10.5, 700); ctx.fillText(`now (${sN.Hn.toFixed(2)}, ${Math.round(sN.conf * 100)})`, X(sN.Hn) + 10, Y(sN.conf) + 4);
+    if (!side) return;
+    // right column: H(t), opinion velocity, Lorenz curve
+    const rx0 = W * 0.66; const rx1 = W - 16; const hh = (H - 34 - 60 - 52) / 3;
+    const panel = (yTop, title, eq, draw) => {
+      ctx.font = mono(10.5, 700); ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.fillText(title, rx0, yTop - 6);
+      ctx.font = mono(9.5); ctx.fillStyle = PAL.faint; ctx.textAlign = 'right'; ctx.fillText(eq, rx1, yTop - 6); ctx.textAlign = 'left';
+      ctx.strokeStyle = rgba(PAL.line, 1); ctx.lineWidth = 1; ctx.strokeRect(rx0, yTop, rx1 - rx0, hh);
+      draw(rx0, yTop, rx1, yTop + hh);
+    };
+    let yT = 34;
+    panel(yT, 'entropy H(t)', `max log₂${k} = ${Math.log2(Math.max(2, k)).toFixed(2)}`, (a, b, c, d) => {
+      const mx = Math.log2(Math.max(2, k)); ctx.beginPath(); ser.forEach((s, i) => { const x = a + (i / Math.max(1, ser.length - 1)) * (c - a); const y = d - (s.H / mx) * (d - b); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); });
+      ctx.strokeStyle = PAL.camps[0]; ctx.lineWidth = 1.6; ctx.stroke(); ctx.fillStyle = PAL.fg; ctx.font = mono(10, 700); ctx.textAlign = 'right'; ctx.fillText(`${sN.H.toFixed(3)} bits`, c - 4, b + 12); ctx.textAlign = 'left';
+    });
+    yT += hh + 26;
+    panel(yT, 'opinion velocity', 'JSD(p_t ‖ p_t−1)', (a, b, c, d) => {
+      const mx = Math.max(1e-4, ...ser.map((s) => s.jsd)); const bw = Math.max(1, (c - a) / ser.length - 0.5);
+      ser.forEach((s, i) => { if (!s.jsd) return; const x = a + (i / Math.max(1, ser.length - 1)) * (c - a - bw); const h = (s.jsd / mx) * (d - b - 4); ctx.fillStyle = hsl2hex(190 + 150 * (i / Math.max(1, ser.length - 1)), 85, 60); ctx.fillRect(x, d - h, bw, h); });
+      ctx.fillStyle = PAL.fg; ctx.font = mono(10, 700); ctx.textAlign = 'right'; ctx.fillText(`peak ${mx.toExponential(1)}`, c - 4, b + 12); ctx.textAlign = 'left';
+    });
+    yT += hh + 26;
+    panel(yT, 'Lorenz (credibility)', `G = ${gini.toFixed(3)}`, (a, b, c, d) => {
+      const s = Math.min(c - a, d - b); const ox = a + (c - a - s) / 2;
+      ctx.strokeStyle = rgba(PAL.faint, 0.6); ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(ox, d); ctx.lineTo(ox + s, d - s); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(ox, d); lorenz.forEach(([px, py]) => ctx.lineTo(ox + px * s, d - py * s)); ctx.lineTo(ox + s, d - s); ctx.closePath(); ctx.fillStyle = rgba(PAL.brass, 0.22); ctx.fill();
+      ctx.beginPath(); lorenz.forEach(([px, py], i) => (i ? ctx.lineTo(ox + px * s, d - py * s) : ctx.moveTo(ox + px * s, d - py * s))); ctx.strokeStyle = PAL.brass; ctx.lineWidth = 1.8; ctx.stroke();
+      ctx.fillStyle = PAL.faint; ctx.font = mono(9); ctx.fillText('agents →', ox + s - 44, d - 4);
+    });
+  }
+
+  // ---------- network: live beams on top ----------
+  function networkCurve(a, b) {
+    const A = a === 'mod' ? { x: W / 2, y: H / 2 + 6, ck: 'm', cx: W / 2, cy: H / 2 + 6 } : nodes.get(a); const B = nodes.get(b); if (!A || !B) return null;
+    const c = ctrl(A, B); const out = []; for (let i = 0; i <= 24; i++) out.push(qpt(A, c, B, i / 24)); return out;
+  }
+  function networkPos(id) { return id === 'mod' ? { x: W / 2, y: H / 2 + 6 } : nodes.get(id); }
+
   // ---------- frame ----------
   function drawGrid() {
     if (!gridCv || gridCv.width !== Math.round(W * DPR) || gridCv.height !== Math.round(H * DPR)) {
@@ -1423,6 +2166,7 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     layoutRoom();
     flow = st ? computeFlow() : null;
     pulse = st ? computePulse() : null;
+    layoutSphere(); stats = computeStats(); chord = computeChord(); phase = computePhase(); mcPrepare();
     dirty = false;
   }
   function pick(mx, my) {
@@ -1434,6 +2178,11 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     if (view === 'room') {
       let best = null; let bd = (roomAr + 4) ** 2;
       for (const [id, p] of seats) { if (p.x == null) continue; const d = (p.x - mx) ** 2 + (p.y - my) ** 2; if (d < bd) { bd = d; best = { id, x: p.x, y: p.y }; } }
+      return best;
+    }
+    if (view === 'sphere') {
+      let best = null; let bd = 1e9;
+      for (const q of pj.values()) { const lim = Math.max(10, (q.r || 3) + 5); const d = (q.x - mx) ** 2 + (q.y - my) ** 2; if (d < lim * lim && d < bd) { bd = d; best = { id: q.id, x: q.x, y: q.y }; } }
       return best;
     }
     if (view === 'flow' && flow) {
@@ -1452,35 +2201,57 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
   }
   function showTip(x, y, html) {
     if (!tip) return; tip.innerHTML = html; tip.classList.remove('hidden');
+    if (!VIEW3D.has(view)) { const c = cam(); x = x * c.k + c.x; y = y * c.k + c.y; }
     const tw = tip.offsetWidth; const th = tip.offsetHeight;
     tip.style.left = `${Math.max(4, Math.min(W - tw - 4, x + 12))}px`; tip.style.top = `${Math.max(4, Math.min(H - th - 4, y + 12))}px`;
   }
   function hideTip() { if (tip) tip.classList.add('hidden'); }
+  function pickChord(m) {
+    if (!chord?.arcs) return null; const dx = m.x - chord.cx; const dy = m.y - chord.cy; const r = Math.hypot(dx, dy);
+    if (r < chord.R * 0.2 || r > chord.R + 60) return null; let ang = Math.atan2(dy, dx); if (ang < -Math.PI / 2) ang += TAU;
+    const A = chord.arcs.find((x) => ang >= x.a0 && ang <= x.a1); return A ? A.i : null;
+  }
+  function chordTip(i) {
+    const c = chord.order[i]; const cc = st.D.camps.find((x) => x.id === c); const out = chord.M[i].reduce((a, b) => a + b, 0); const inn = chord.M.reduce((a, r) => a + r[i], 0);
+    return `<b><span class="tdot" style="background:${campColor(c)}"></span>Camp ${c}</b><div class="tmuted">${cc?.label || ''}</div><div>${chord.members[i].length} agents · out ${fmt(out, 1)} · in ${fmt(inn, 1)}</div><div class="tmuted">self-talk ${fmt((chord.M[i][i] / Math.max(1e-9, out)) * 100, 0)}% of its interactions</div>`;
+  }
+  function easeCam() {
+    if (VIEW3D.has(view)) { const o = orb(); if (o.D != null) { o.dist += (o.D - o.dist) * 0.2; if (Math.abs(o.D - o.dist) < 0.002) { o.dist = o.D; o.D = null; } } return; }
+    const c = cam(); if (c.K == null) return;
+    c.k += (c.K - c.k) * 0.22; c.x += (c.X - c.x) * 0.22; c.y += (c.Y - c.y) * 0.22;
+    if (Math.abs(c.K - c.k) < 0.001 && Math.abs(c.X - c.x) < 0.3 && Math.abs(c.Y - c.y) < 0.3) { c.k = c.K; c.x = c.X; c.y = c.Y; c.K = null; }
+  }
   function frame(now) {
     requestAnimationFrame(frame);
     if (!cv || view === 'seats' || document.hidden || !cv.offsetParent) return;
     if (!PAL) readPalette();
     if (V._release) V._release(now);
     if (dirty) rebuild();
+    easeCam();
     ctx.clearRect(0, 0, W, H);
     drawGrid();
-    if (view === 'network') {
-      stepNetwork(now);
-      hover = mouse ? pick(mouse.x, mouse.y) : null;
-      drawNetwork(now);
-      if (hover) showTip(hover.x, hover.y, tipFor(hover.id)); else hideTip();
-    } else if (view === 'flow') {
-      hover = mouse ? pick(mouse.x, mouse.y) : null;
-      drawFlow(now);
-      if (hover) showTip(hover.x, hover.y, tipFor(hover.id)); else hideTip();
-    } else if (view === 'pulse') { hover = null; drawPulse(now); }
-    else if (view === 'room') {
-      hover = mouse ? pick(mouse.x, mouse.y) : null;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      drawRoom(now);
-      if (hover) showTip(hover.x, hover.y, tipFor(hover.id)); else hideTip();
+    const is3 = VIEW3D.has(view); const c = cam();
+    mouse = mouseS && !is3 ? { x: (mouseS.x - c.x) / c.k, y: (mouseS.y - c.y) / c.k } : mouseS;
+    hover = null; let tipHtml = null;
+    if (!is3) { ctx.save(); ctx.translate(c.x, c.y); ctx.scale(c.k, c.k); }
+    if (view === 'network') { stepNetwork(now); hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; drawNetwork(now); }
+    else if (view === 'flow') { hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; drawFlow(now); }
+    else if (view === 'pulse') drawPulse(now);
+    else if (view === 'room') { hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; drawRoom(now); }
+    else if (view === 'chord') { chordHover = mouse && !drag ? pickChord(mouse) : null; drawChord(now); if (chordHover != null) tipHtml = chordTip(chordHover); }
+    else if (view === 'mc') drawMC(now);
+    else if (view === 'phase') drawPhase(now);
+    else if (view === 'sphere') { drawSphere(now); hover = mouse && !drag ? pick(mouse.x, mouse.y) : null; }
+    else if (view === 'ridges') drawRidges(now);
+    if (!is3) ctx.restore();
+    ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    drawMathHud();
+    if (view !== 'pulse') {
+      if (hover) showTip(hover.x, hover.y, tipFor(hover.id));
+      else if (tipHtml && mouse) showTip(mouse.x, mouse.y, tipHtml);
+      else hideTip();
     }
-    cv.style.cursor = hover ? 'pointer' : 'default';
+    cv.style.cursor = hover || tipHtml ? 'pointer' : drag?.moved ? 'grabbing' : 'grab';
   }
   function resize() {
     const box = cv.parentElement.getBoundingClientRect();
@@ -1492,22 +2263,63 @@ details.brief-d summary { cursor: pointer; font: 600 15px var(--serif); color: v
     gridCv = null; dirty = true;
   }
 
+  function zoomBy(f, p) {
+    if (VIEW3D.has(view)) { const o = orb(); o.D = Math.max(1.3, Math.min(9, (o.D ?? o.dist) / f)); o.user = performance.now(); return; }
+    const c = cam(); p = p || { x: W / 2, y: H / 2 };
+    const K = c.K ?? c.k; const X = c.X ?? c.x; const Y = c.Y ?? c.y; const k = Math.max(0.5, Math.min(10, K * f));
+    const wx = (p.x - X) / K; const wy = (p.y - Y) / K; c.K = k; c.X = p.x - wx * k; c.Y = p.y - wy * k;
+  }
+  function resetCam() {
+    if (VIEW3D.has(view)) { const o = orb(); const z = ORBIT0[view]; o.D = z.dist; o.yaw = z.yaw; o.pitch = z.pitch; o.user = -1e9; return; }
+    const c = cam(); c.K = 1; c.X = 0; c.Y = 0;
+  }
+
   // ---------- API ----------
   V.init = (canvas, tipEl, opts = {}) => {
     cv = canvas; ctx = cv.getContext('2d'); tip = tipEl;
     getS = opts.getState || getS; onPick = opts.onPick || onPick;
     new ResizeObserver(resize).observe(cv.parentElement); resize();
     const pos = (e) => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-    cv.addEventListener('pointermove', (e) => { mouse = pos(e); });
-    cv.addEventListener('pointerleave', () => { mouse = null; hideTip(); });
-    cv.addEventListener('click', (e) => { const p = pos(e); const h = pick(p.x, p.y); if (h) onPick(h.id); });
+    const ptrs = new Map(); let pinch = null;
+    cv.addEventListener('pointerdown', (e) => {
+      if (view === 'seats') return; const p = pos(e); ptrs.set(e.pointerId, p);
+      try { cv.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+      if (ptrs.size === 1) { const c = cam(); const o = orb(); c.K = null; o.D = null; drag = { sx: p.x, sy: p.y, cx: c.x, cy: c.y, yaw: o.yaw, pitch: o.pitch, moved: false }; }
+      if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, k: cam().k, dist: orb().dist, cx: cam().x, cy: cam().y, mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 }; if (drag) drag.moved = true; }
+    });
+    cv.addEventListener('pointermove', (e) => {
+      const p = pos(e); mouseS = p;
+      if (!ptrs.has(e.pointerId)) return; ptrs.set(e.pointerId, p);
+      if (ptrs.size >= 2 && pinch) {
+        const [a, b] = [...ptrs.values()]; const f = (Math.hypot(a.x - b.x, a.y - b.y) || 1) / pinch.d;
+        if (VIEW3D.has(view)) { const o = orb(); o.dist = Math.max(1.3, Math.min(9, pinch.dist / f)); o.user = performance.now(); }
+        else { const c = cam(); const k = Math.max(0.5, Math.min(10, pinch.k * f)); const wx = (pinch.mx - pinch.cx) / pinch.k; const wy = (pinch.my - pinch.cy) / pinch.k; const mx = (a.x + b.x) / 2; const my = (a.y + b.y) / 2; c.k = k; c.x = mx - wx * k; c.y = my - wy * k; }
+        return;
+      }
+      if (!drag) return;
+      const dx = p.x - drag.sx; const dy = p.y - drag.sy;
+      if (!drag.moved && Math.hypot(dx, dy) > 4) drag.moved = true;
+      if (!drag.moved) return;
+      if (VIEW3D.has(view)) { const o = orb(); o.yaw = drag.yaw + dx * 0.008; o.pitch = Math.max(-1.45, Math.min(1.45, drag.pitch + dy * 0.008)); o.user = performance.now(); }
+      else { const c = cam(); c.x = drag.cx + dx; c.y = drag.cy + dy; }
+    });
+    const up = (e) => { ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null; if (!ptrs.size) setTimeout(() => { drag = null; }, 0); };
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    cv.addEventListener('pointerleave', () => { mouseS = null; hideTip(); });
+    cv.addEventListener('click', (e) => { if (drag?.moved) return; const p = pos(e); const c = cam(); const w = VIEW3D.has(view) ? p : { x: (p.x - c.x) / c.k, y: (p.y - c.y) / c.k }; const h = pick(w.x, w.y); if (h) onPick(h.id); });
+    cv.addEventListener('wheel', (e) => { if (view === 'seats') return; e.preventDefault(); zoomBy(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0018)), pos(e)); }, { passive: false });
+    cv.addEventListener('dblclick', () => resetCam());
+    zc = document.createElement('div'); zc.className = 'zoomctl';
+    zc.innerHTML = '<button type="button" data-z="in" aria-label="Zoom in" title="Zoom in">+</button><button type="button" data-z="out" aria-label="Zoom out" title="Zoom out">−</button><button type="button" data-z="reset" aria-label="Reset the view" title="Reset the view">⟲</button><button type="button" data-z="math" class="on" aria-label="Show the math" title="Show the math">Σ</button>';
+    zc.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const z = b.dataset.z; if (z === 'in') zoomBy(1.4); else if (z === 'out') zoomBy(1 / 1.4); else if (z === 'reset') resetCam(); else { showMath = !(showMath ?? W >= 900); b.classList.toggle('on', showMath); } });
+    cv.parentElement.appendChild(zc);
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { PAL = null; dirty = true; });
     requestAnimationFrame(frame);
   };
-  V.setView = (v) => { view = v; revealT = performance.now(); mouse = null; hover = null; hideTip(); dirty = true; };
+  V.setView = (v) => { view = v; if (zc) zc.classList.toggle('hidden', v === 'seats'); revealT = performance.now(); mouse = null; hover = null; hideTip(); dirty = true; };
   V.view = () => view;
   V.invalidate = () => { dirty = true; };
-  V.resetNodes = () => { nodes.clear(); seats.clear(); pulses = []; sparks = []; ambient = []; talk = []; rxLinks = []; queue = []; pinned = false; dirty = true; };
+  V.resetNodes = () => { nodes.clear(); seats.clear(); n3.clear(); MC.key = ''; pulses = []; sparks = []; ambient = []; talk = []; rxLinks = []; queue = []; pinned = false; dirty = true; };
   V.pulse = (from, to, camp) => { if (!PAL) readPalette(); pulses.push({ from, to, t0: performance.now(), dur: 1000, col: camp ? campColor(camp) : PAL.brass }); };
   V.spark = (id, ch) => sparks.push({ id, ch, t0: performance.now() });
   V.derive = derive;
@@ -2610,6 +3422,11 @@ const VIEW_CAPTION = {
   seats: '',
   flow: 'Every line is one agent, from opening statement through each round to the final vote. Bright lines changed camps.',
   pulse: 'Camp shares across the debate, with average confidence (dashed) and reaction intensity (bars).',
+  sphere: 'Opinion space in 3D. Each camp is a pole; agents sit near their camp, further out the surer they are. Arcs are replies; the speaker throws a beam to who they answer and threads to everyone listening. Drag to spin, scroll or pinch to zoom.',
+  ridges: 'Each camp\'s share of the chamber over time, as a 3D surface. Dashed: average confidence. Round markers on the floor. Drag to rotate.',
+  chord: 'Who argues with whom. Ribbons join camps by how much they replied to and reacted at each other; ticks around the rim are agents, longer for more credibility. The matrix gives the exact counts.',
+  mc: 'The bootstrap, live: 10,000 times, the chamber is resampled with replacement and the weighted vote recounted. Curves are the distribution of each camp\'s share; bars are how often each camp wins, with the error shrinking as samples pile up.',
+  phase: 'The debate as a path: across is how split the chamber is (normalized entropy), up is how sure it is. Gold curves are equal certainty. Right: entropy over time, how fast opinion moved each step, and how unequal credibility is (Lorenz curve, Gini).',
 };
 function setView(v, quiet) {
   S.view = v; if (!quiet) S.viewUser = v;
@@ -2777,7 +3594,11 @@ const GLOSSARY = [
   ['robustness', 'Robustness', '0 to 100, from P(win) (40%), how often the winner survives leaving a group out (30%) and how much support survives the red team (30%). 75+ is robust, 50–74 holds with caveats, under 50 is fragile.'],
   ['synthesizer', 'Synthesizer', 'Writes the final answer from the arguments, votes, credibility, stress test and recaps. It is told to weigh argument quality over headcount.'],
   ['analyst', 'Analyst', 'A chat that has read the whole debate. Ask who made the best point, what split the room, or where the reasoning breaks.'],
-  ['views', 'Chamber views', 'Room: the agents at the table, talking and listening. Network: who argued with whom, clustered by camp. Seats: a parliament seating chart. Flow: each agent\'s path between camps. Pulse: camp shares over time. Replay rewinds any of them.'],
+  ['views', 'Chamber views', 'Room: the agents at the table, talking and listening. Network: who argued with whom, clustered by camp. Sphere (3D): opinion space, camps as poles, distance from the centre as confidence. Ridges (3D): camp shares over time as a surface. Chord: how much each camp engaged each other camp. Monte Carlo: the 10,000-sample bootstrap behind the win probabilities, animated. Phase: the debate as a path through disagreement and confidence, plus the credibility Gini. Seats: a parliament seating chart. Flow: each agent\'s path between camps. Pulse: camp shares over time. Every view zooms (scroll or pinch) and pans (drag); 3D views spin. Σ shows the live formulas. Replay rewinds any of them.'],
+  ['entropy', 'Entropy (H)', 'How split the chamber is, in bits: H = −Σ p log₂ p over camp shares. 0 means everyone agrees; log₂(number of camps) means an even split. Consensus κ = 1 − H / log₂k.'],
+  ['gini', 'Gini (credibility)', 'How unequal credibility is across agents: 0 means everyone earned the same, 1 means one agent earned it all. Drawn as a Lorenz curve in the Phase view.'],
+  ['neff', 'Effective camps (N_eff)', '1 / Σ p², the number of equally sized camps that would split the chamber this much. Two camps at 50/50 gives 2; 90/10 gives about 1.2.'],
+  ['jsd', 'Opinion velocity (JSD)', 'Jensen–Shannon divergence between the camp shares before and after each message: how far opinion moved in that step.'],
   ['replay', 'Replay', 'Drag the slider or press Replay to rewatch the debate. Every view, the seats, the camps and the transcript rewind to that moment.'],
 ];
 function renderGlossary(q) {
